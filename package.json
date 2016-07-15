@@ -2,10 +2,7 @@
   "name": "thor-io.client-vnext",
   "version": "1.0.0",
   "license": "MIT",
-  "main": "index.js",
-  "engines": {
-    "node": "6.2.0"
-  },
+  "main": "src/thor-io.client.js",
   "dependencies": {
   },
   "devDependencies": {
