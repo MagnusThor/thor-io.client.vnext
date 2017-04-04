@@ -215,7 +215,7 @@ var ThorIOClient;
             this.Errors = new Array();
             this.DataChannels = new Array();
             this.Peers = new Array();
-            this.LocalSteams = new Array();
+            this.LocalStreams = new Array();
             this.signalHandlers();
             brokerProxy.On("contextCreated", function (peer) {
                 _this.LocalPeerId = peer.peerId;
@@ -329,7 +329,7 @@ var ThorIOClient;
         WebRTC.prototype.onOffer = function (event) {
             var _this = this;
             var pc = this.getPeerConnection(event.sender);
-            this.LocalSteams.forEach(function (stream) {
+            this.LocalStreams.forEach(function (stream) {
                 pc.addStream(stream);
             });
             pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(event.message)));
@@ -353,7 +353,7 @@ var ThorIOClient;
             });
         };
         WebRTC.prototype.AddLocalStream = function (stream) {
-            this.LocalSteams.push(stream);
+            this.LocalStreams.push(stream);
             return this;
         };
         WebRTC.prototype.AddIceServer = function (iceServer) {
@@ -445,9 +445,9 @@ var ThorIOClient;
         WebRTC.prototype.createOffer = function (peer) {
             var _this = this;
             var peerConnection = this.createPeerConnection(peer.peerId);
-            this.LocalSteams.forEach(function (stream) {
+            this.LocalStreams.forEach(function (stream) {
                 peerConnection.addStream(stream);
-                _this.OnLocalSteam(stream);
+                _this.OnLocalStream(stream);
             });
             peerConnection.createOffer(function (description) {
                 peerConnection.setLocalDescription(description, function () {

@@ -258,7 +258,7 @@ export namespace ThorIOClient {
         public DataChannels: Array<DataChannel>;
         public LocalPeerId: string;
         public Context: string;
-        public LocalSteams: Array<any>;
+        public LocalStreams: Array<any>;
         public Errors: Array<any>;
         public bandwidthConstraints: BandwidthConstraints
 
@@ -266,7 +266,7 @@ export namespace ThorIOClient {
             this.Errors = new Array<any>();
             this.DataChannels = new Array<DataChannel>();
             this.Peers = new Array<any>();
-            this.LocalSteams = new Array<any>();
+            this.LocalStreams = new Array<any>();
             this.signalHandlers();
 
             brokerProxy.On("contextCreated", (peer: PeerConnection) => {
@@ -367,7 +367,7 @@ export namespace ThorIOClient {
         OnRemoteStream: (stream: MediaStream, connection: WebRTCConnection) => void;
         OnRemoteStreamlost:(streamId: string, peerId: string) => void
 
-        OnLocalSteam: (stream: MediaStream) => void
+        OnLocalStream: (stream: MediaStream) => void
         OnContextConnected: (rtcPeerConnection: RTCPeerConnection) => void
         OnContextDisconnected: (rtcPeerConnection: RTCPeerConnection) => void
 
@@ -409,7 +409,7 @@ export namespace ThorIOClient {
 
         private onOffer(event) {
             let pc = this.getPeerConnection(event.sender);
-            this.LocalSteams.forEach((stream) => {
+            this.LocalStreams.forEach((stream) => {
                 pc.addStream(stream);
 
             });
@@ -437,7 +437,7 @@ export namespace ThorIOClient {
 
         }
         AddLocalStream(stream: any): WebRTC {
-            this.LocalSteams.push(stream);
+            this.LocalStreams.push(stream);
             return this;
         }
         AddIceServer(iceServer: RTCIceServer): WebRTC {
@@ -527,9 +527,9 @@ export namespace ThorIOClient {
         }
         private createOffer(peer: PeerConnection) {
             let peerConnection = this.createPeerConnection(peer.peerId);
-            this.LocalSteams.forEach((stream) => {
+            this.LocalStreams.forEach((stream) => {
                 peerConnection.addStream(stream);
-                this.OnLocalSteam(stream);
+                this.OnLocalStream(stream);
             });
             peerConnection.createOffer((description: RTCSessionDescription) => {
                 peerConnection.setLocalDescription(description, () => {

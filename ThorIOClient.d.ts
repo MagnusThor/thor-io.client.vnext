@@ -78,7 +78,7 @@ export declare namespace ThorIOClient {
         DataChannels: Array<DataChannel>;
         LocalPeerId: string;
         Context: string;
-        LocalSteams: Array<any>;
+        LocalStreams: Array<any>;
         Errors: Array<any>;
         bandwidthConstraints: BandwidthConstraints;
         constructor(brokerProxy: ThorIOClient.Proxy, rtcConfig: any);
@@ -94,9 +94,9 @@ export declare namespace ThorIOClient {
         OnContextChanged: (context: string) => void;
         OnRemoteStream: (stream: MediaStream, connection: WebRTCConnection) => void;
         OnRemoteStreamlost: (streamId: string, peerId: string) => void;
-        OnLocalSteam: (stream: MediaStream) => void;
-        OnContextConnected: (rtcPeerConnection: PeerConnection) => void;
-        OnContextDisconnected: (rtcPeerConnection: PeerConnection) => void;
+        OnLocalStream: (stream: MediaStream) => void;
+        OnContextConnected: (rtcPeerConnection: RTCPeerConnection) => void;
+        OnContextDisconnected: (rtcPeerConnection: RTCPeerConnection) => void;
         OnConnectTo(peerConnections: Array<PeerConnection>): void;
         OnConnected(peerId: string): void;
         OnDisconnected(peerId: string): void;
