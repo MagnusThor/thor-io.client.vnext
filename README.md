@@ -1,11 +1,13 @@
 # ThorIOClient
 
-TBD
+ThorIOClient gives you the tools to connect, use and take advantage of the power that thor-io.vnext brings when 
+it comes to simplify real-time communication in your web, native and IoT applications. It covers RPC, PubSub,P2P and MediaStream's in a
+ statefull,low-latency, bi-directional environment/world.
+
 
 ## Installation
 
-    npm install thor-io.client-vnext 
- 
+    npm install thor-io.client-vnext  
 
 ## ThorIOClient.Factory
 
@@ -167,7 +169,7 @@ One of the communication patterns of ThorIO is the RPC pattern.  If you choose t
  To add and remove listeners on the client use `On` and `Off` . As you can pass an expression or filter on a state declared by each client connected, you are able to target specific clients based on state, so the implementation of RPC in ThorIO can be considered as an extension of RPC.
 
 
-### .Invoke(topic: string, data: any, controller?: string): ThorIO.Client.Proxy;
+### .Invoke(topic: string, data: any, controller?: string): ThorIOClient.Proxy;
 
  To invoke / call a method on ThorIO.Controller use `.invoke`, where `topic` is the name of the method and data is the arguments/parameters.
 
@@ -175,7 +177,12 @@ Let's say that the `ThorIO.Controller` (server) has a method named "`say`". Then
 
      foo.Invoke("say", { message: this.value, created: new Date() });
 
-###  .InvokeBinary(buffer: ArrayBuffer): ThorIO.Client.Proxy;
+###  .InvokeBinary(buffer: ArrayBuffer): ThorIOClient.Proxy;
+
+Sends a message to the `ThorIO.Controller` as an ArrayBuffer.  ThorIO expects the ArrayBuffer that you send to be in the 
+ThorIOClient.BinaryMessage format. See Thor.BinaryMessage for information.
+
+
    
 ### .On(topic: string, fn: any): Listener;
 
@@ -210,11 +217,72 @@ To establish / register a subscription on the channel, call subscribe. This will
 To remove / unsubscribe an subscription, call unsubscribe. This will remove the subscription from the `ThorIO.Controller` and the `ThorIO.Client.Proxy`
 
 
-### Publish(topic: string, data: any, controller?: string): ThorIO.Client.Proxy
+### Publish(topic: string, data: any, controller?: string): ThorIOClient.Proxy
 
-TBD
+To publish a message (data) you call the publish method. 
 
-### PublishBinary(buffer: ArrayBuffer): ThorIO.Client.Proxy;
+### PublishBinary(buffer: ArrayBuffer): ThorIOClient.Proxy;
+
+
+Publishes a message to the `ThorIO.Controller` as an ArrayBuffer.  ThorIO expects the ArrayBuffer that you send to be in the 
+ThorIOClient.BinaryMessage format. See Thor.BinaryMessage for information.
+
+
+##ThorIOClient.Message
+
+When you call invoke, publish etc. on a ThorIOClient.Proxy the API constructs a `ThorIOClient.Message`.
+
+
+### ThorIOClient.Message(topic: string, object: any, controller: string, buffer?: ArrayBuffer): ThorIOClient.Message
+
+## Methods
+
+### toJSON:object
+
+### toString()
+
+Get the message serialized as a string
+
+### static fromArrayBuffer(buffer: ArrayBuffer): any; 
+
+Convert an ArrayBuffer of `ThorIOClient.BinaryMessage` to an `ThorIOClient.Message`
+
+## Properties
+
+### D:object
+
+the data object of the message
+
+### T:string
+
+the message's topic
+
+### C:string
+
+name of the `ThorIO.Controller` that the message targets.
+
+## ThorIOClient.BinaryMessage
+
+`ThorIOClient.BinaryMessage`  allows you to pass binary data such as ArrayBuffer's and Blobs from your client to the 
+controller. It wrapps and constructs a BinaryMessage format designed to work with `ThorIO.Controller` .
+
+
+## ThorIOClient.BinaryMessage(message:string,buffer:ArrayBuffer): ThorIOClient.BinaryMessage
+
+To create a binary message you need to provide the `ThorIOClient.Message`  serialized as a string, and the ArrayBuffer as the second
+argument.
+
+        let message = new ThorIOClient.Message("sendMessage",
+          {foo:'bar',"mycontroller"
+        );
+        
+        let buffer = new ArrayBuffer(10);
+        
+        let bm = new ThorIOClient.BinaryMessage(message.toString(),buffer);
+
+
+This example will invoke the "sendMessage" method on the controller named 'mycontroller', with the ArrayBuffer along with the object 
+    {foo:bar}
 
 
 ## ThorIOClient.WebRTC
