@@ -14,7 +14,7 @@ it comes to simplify real-time communication in your web, native and IoT applica
 You will need a `ThorIOClient.Factory` when connecting to a ThorIO.Engine (server) and the ThorIO.Controllers you have provided/registered.   The factory is simple in itself. It just opens the connection to the endpoints and controllers and provides a `ThorIOClient.Proxy` for each `ThorIO.Controller`.
 
 
-##.Factory(url:string,controllers:Array[string],?params:any): ThorIOClient.Factory
+## .Factory(url:string,controllers:Array[string],?params:any): ThorIOClient.Factory
 
 To connect to a ThorIO.Engine you need to create a client using the `.Factory` 
 
@@ -23,7 +23,7 @@ To connect to a ThorIO.Engine you need to create a client using the `.Factory`
 The array of controllers corresponds to the alias defined by using the `@ControllerProperties(..)` decorator on the ThorIO.Controllers registered at the server side ( see Engine & Controller ).  Each controller (alias) must correspond to the alias of the Controller.
 
 
-##Events
+## Events
 
 ### OnOpen(a:ThorIOClient.Proxy,b:ThorIOClient.Proxy...) 
 
@@ -60,23 +60,23 @@ This fires when an error occurs on the ThorIO.Engine ( server side)
   		 // do-op
 	    };
 
-##Methods
+## Methods
 
-###.GetProxy(alias:string) : ThorIOClient.Proxy
+### GetProxy(alias:string) : ThorIOClient.Proxy
 
 To get a registered on a factory
 
 
 
-### .RemoveProxy(alias:string):void
+### RemoveProxy(alias:string):void
 
 This removes the registered proxy.
 
-###. Close() : void
+### Close() : void
 
 This closes the client connection to the endpoint. Will close all `ThorIOClient.Proxy` instances created. 
 
-### .Reconnect()
+### Reconnect()
 
 TBD
 
@@ -88,7 +88,7 @@ TBD
 Indicates if the factory is has an established connection.
 
 
-#ThorIOClient.Proxy
+# ThorIOClient.Proxy
 
 The concept of `ThorIOClient.Proxy` can briefly be described as follows.
 A proxy can be considered as a client instance of the `ThorIO.Controller.` 
@@ -106,9 +106,9 @@ The `.Factory` will then fire the `.OnOpen` event and provide you with 1-n many 
         // do other ops...
      };
 
-##Events
+## Events
 
-### .OnOpen(Event) 
+### OnOpen(Event) 
 
 When the Engine is successfully created the `ThorIOClient.Proxy` will send back an object the includes `ConnectionInfo`
 
@@ -120,22 +120,22 @@ Where foo is the Channel (see above)
 
 Note that `.Connect` will need to be called first (see below )
 
-### .OnClose(Event)
+### OnClose(Event)
 
 This fires when the `ThorIO.Controllers` call `.Close` or the client calls `.Close`
 
-### .OnError(Error)
+### OnError(Error)
 
 Fires when an error occurs.
 
-##Methods
+## Methods
 
-### .Connect()
+### Connect()
 
 When the ThorIOClient.Proxy is created using the .Factory(...), you need to call `.Connect`() to be able to use it. 
 When `.Connect` is called the `OnOpen` event will fire if the connection is successfully established.
 
-### .Close()
+### Close()
 
 This closes the channel and removes the `ThorIO.Controller` instance on the server. `Close()` will fire the `OnClose` event.
 
@@ -169,7 +169,7 @@ One of the communication patterns of ThorIO is the RPC pattern.  If you choose t
  To add and remove listeners on the client use `On` and `Off` . As you can pass an expression or filter on a state declared by each client connected, you are able to target specific clients based on state, so the implementation of RPC in ThorIO can be considered as an extension of RPC.
 
 
-### .Invoke(topic: string, data: any, controller?: string): ThorIOClient.Proxy;
+### Invoke(topic: string, data: any, controller?: string): ThorIOClient.Proxy;
 
  To invoke / call a method on ThorIO.Controller use `.invoke`, where `topic` is the name of the method and data is the arguments/parameters.
 
@@ -177,14 +177,14 @@ Let's say that the `ThorIO.Controller` (server) has a method named "`say`". Then
 
      foo.Invoke("say", { message: this.value, created: new Date() });
 
-###  .InvokeBinary(buffer: ArrayBuffer): ThorIOClient.Proxy;
+### InvokeBinary(buffer: ArrayBuffer): ThorIOClient.Proxy;
 
 Sends a message to the `ThorIO.Controller` as an ArrayBuffer.  ThorIO expects the ArrayBuffer that you send to be in the 
 ThorIOClient.BinaryMessage format. See Thor.BinaryMessage for information.
 
 
    
-### .On(topic: string, fn: any): Listener;
+### On(topic: string, fn: any): Listener;
 
 To add a listener for a topic on the ThorIO.Client.Proxy
 
@@ -193,7 +193,7 @@ To add a listener for a topic on the ThorIO.Client.Proxy
 		  // from the server controller 
      });
 
-###  .Off(topic: string): void;
+### Off(topic: string): void;
 
 To remove a listener (stop receiving messages)
 
@@ -204,7 +204,7 @@ To remove a listener (stop receiving messages)
 
 In addition to the RPC pattern mentioned above you can use a publish & subscribe pattern.  The publish & subscribe pattern of ThorIO is similar to the RPC implementation, but the main difference is that the ThorIO controller always ensures that the specific client connected has a valid subscription before sending the information. 
 
-### . Subscribe(topic: string, callback: Function): Listener;
+### Subscribe(topic: string, callback: Function): Listener;
 
 To establish / register a subscription on the channel, call subscribe. This will notify the server (controller) that the client subscribes to the specified topic.
 
@@ -228,7 +228,7 @@ Publishes a message to the `ThorIO.Controller` as an ArrayBuffer.  ThorIO expect
 ThorIOClient.BinaryMessage format. See Thor.BinaryMessage for information.
 
 
-##ThorIOClient.Message
+## ThorIOClient.Message
 
 When you call invoke, publish etc. on a ThorIOClient.Proxy the API constructs a `ThorIOClient.Message`.
 
