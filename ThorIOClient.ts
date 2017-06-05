@@ -413,25 +413,25 @@ export namespace ThorIOClient {
                 pc.addStream(stream);
 
             });
+            
             pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(event.message)));
             pc.createAnswer((description) => {
-                pc.setLocalDescription(description);
-                if(this.bandwidthConstraints) description.sdp = this.setMediaBitrates(description.sdp);
-
-
-                let answer = {
-                    sender: this.LocalPeerId,
-                    recipient: event.sender,
-                    message: JSON.stringify(description)
-                };
-                this.brokerProxy.Invoke("contextSignal", answer);
-
-            }, (err) => {
+                pc.setLocalDescription(description).then(() => {
+                    if (this.bandwidthConstraints) description.sdp = this.setMediaBitrates(description.sdp);
+                    let answer = {
+                        sender: this.LocalPeerId,
+                        recipient: event.sender,
+                        message: JSON.stringify(description)
+                    };
+                    this.brokerProxy.Invoke("contextSignal", answer);
+                }).catch( (err) => {
+            });
+            },(err) => {
                 this.addError(err);
-            }, {
+            },{
                     mandatory: {
-                        "offerToReceiveAudio": true,
-                        "offerToReceiveVideo": true,
+                        "OfferToReceiveAudio": true,
+                        "OfferToReceiveVideo": true,
                     }
                 });
 
@@ -550,8 +550,8 @@ export namespace ThorIOClient {
                 this.addError(err);
             }, {
                     mandatory: {
-                        "offerToReceiveAudio": true,
-                        "offerToReceiveVideo": true,
+                        "OfferToReceiveAudio": true,
+                        "OfferToReceiveVideo": true,
                     }
                 });
             return peerConnection;

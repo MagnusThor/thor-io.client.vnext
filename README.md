@@ -347,12 +347,9 @@ Fires after that ChangeContext is invoked and the broker confirms the change.
 
 Fires when a MediaStream is connected and aviilable.
 
-
 ### OnRemoteStreamlost: (streamId: string, peerId: string)
 
-
 Fires when a remote MediaStream is lost. i.e the remote PeerConnection is lost or the steam is removed.
-
 
 ### OnLocalStream: (stream: MediaStream)
 
@@ -361,7 +358,6 @@ Fires when a local stream is added. After AddLocalStream is invoked.
 ### OnContextConnected: (rtcPeerConnection: RTCPeerConnection)
 
 Fires when the 'local' PeerConnection has established a connection to a context,
-
 
 ### OnContextDisconnected: (rtcPeerConnection: RTCPeerConnection)
 

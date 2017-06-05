@@ -334,21 +334,23 @@ var ThorIOClient;
             });
             pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(event.message)));
             pc.createAnswer(function (description) {
-                pc.setLocalDescription(description);
-                if (_this.bandwidthConstraints)
-                    description.sdp = _this.setMediaBitrates(description.sdp);
-                var answer = {
-                    sender: _this.LocalPeerId,
-                    recipient: event.sender,
-                    message: JSON.stringify(description)
-                };
-                _this.brokerProxy.Invoke("contextSignal", answer);
+                pc.setLocalDescription(description).then(function () {
+                    if (_this.bandwidthConstraints)
+                        description.sdp = _this.setMediaBitrates(description.sdp);
+                    var answer = {
+                        sender: _this.LocalPeerId,
+                        recipient: event.sender,
+                        message: JSON.stringify(description)
+                    };
+                    _this.brokerProxy.Invoke("contextSignal", answer);
+                }).catch(function (err) {
+                });
             }, function (err) {
                 _this.addError(err);
             }, {
                 mandatory: {
-                    "offerToReceiveAudio": true,
-                    "offerToReceiveVideo": true,
+                    "OfferToReceiveAudio": true,
+                    "OfferToReceiveVideo": true,
                 }
             });
         };
@@ -466,8 +468,8 @@ var ThorIOClient;
                 _this.addError(err);
             }, {
                 mandatory: {
-                    "offerToReceiveAudio": true,
-                    "offerToReceiveVideo": true,
+                    "OfferToReceiveAudio": true,
+                    "OfferToReceiveVideo": true,
                 }
             });
             return peerConnection;
