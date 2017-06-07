@@ -11,22 +11,18 @@ export namespace ThorIOClient {
         Buffer: ArrayBuffer;
         private header: Uint8Array
 
-        static fromArrayBuffer(buffer: ArrayBuffer): any {
-            const headerLen = 8;
-            let header = new Uint8Array(buffer, 0, headerLen);
+        static fromArrayBuffer(buffer: ArrayBuffer): Message {
 
+            let bytes = new Uint8Array(buffer);
+            let headerLen = 8;
+            let header =  bytes.slice(0,8);
             let payloadLength = ThorIOClient.Utils.arrayToLong(header);
-
-            let message = new Uint8Array(buffer, headerLen, payloadLength);
-
-            let blobOffset = headerLen + payloadLength;
-
-            let messageBuffer = new Uint8Array(buffer, blobOffset, buffer.byteLength - blobOffset);
-
-            let json = JSON.parse(String.fromCharCode.apply(null, new Uint16Array(message)));
-
-            return new Message(json.T, json.D, json.C, messageBuffer.buffer);
-
+            let start = header.byteLength + payloadLength;
+            let bytesMessage =  bytes.slice(header.byteLength,start); 
+            let stop = buffer.byteLength - start;
+            let messageBuffer = bytes.slice(start,stop)
+            let message = JSON.parse(String.fromCharCode.apply(null, new Uint16Array(bytesMessage)));
+            return new Message(message.T,message.D,message.C,messageBuffer);
         }
 
 
@@ -37,18 +33,12 @@ export namespace ThorIOClient {
                 ThorIOClient.Utils.stingToBuffer(message).buffer),
                 arrayBuffer);
         }
-
         private joinBuffers(a: ArrayBuffer, b: ArrayBuffer): ArrayBuffer {
-
             let newBuffer = new Uint8Array(a.byteLength + b.byteLength);
             newBuffer.set(new Uint8Array(a), 0);
             newBuffer.set(new Uint8Array(b), a.byteLength);
             return newBuffer.buffer;
-
         }
-
-
-
     }
 
     export class Message {
@@ -56,7 +46,6 @@ export namespace ThorIOClient {
         T: string;
         D: any;
         C: string;
-
         get JSON(): any {
             return {
                 T: this.T,
@@ -73,46 +62,24 @@ export namespace ThorIOClient {
         toString() {
             return JSON.stringify(this.JSON);
         }
-
-        static fromArrayBuffer(buffer: ArrayBuffer): any {
-            let headerLen = 8;
-            let header = new Uint8Array(buffer, 0, headerLen);
-
-            let payloadLength = ThorIOClient.Utils.arrayToLong(header);
-
-
-            let message = new Uint8Array(buffer, headerLen, payloadLength);
-
-            let blobOffset = headerLen + payloadLength;
-
-            let messageBuffer = new Uint8Array(buffer, blobOffset, buffer.byteLength - blobOffset);
-
-            let json = JSON.parse(String.fromCharCode.apply(null, new Uint16Array(message)));
-
-            return new Message(json.T, json.D, json.C, messageBuffer.buffer);
-
+        static fromArrayBuffer(buffer: ArrayBuffer): Message {
+            return ThorIOClient.BinaryMessage.fromArrayBuffer(buffer);
         }
-
     }
-    // todo: Move to separate namespace
     export class PeerConnection {
         context: string;
         peerId: string;
     }
-
     export class WebRTCConnection {
         id: string;
         RTCPeer: RTCPeerConnection;
-        streams: Array<any>;
+        streams: Array<MediaStream>;
         constructor(id: string, rtcPeerConnection: RTCPeerConnection) {
             this.id = id;
             this.RTCPeer = rtcPeerConnection;
-            this.streams = new Array<any>();
+            this.streams = new Array<MediaStream>();
         }
     }
-
-
-    declare var MediaRecorder: any;
 
     export class Recorder {
         private recorder: any;
@@ -366,24 +333,20 @@ export namespace ThorIOClient {
         OnContextChanged: (context: string) => void
         OnRemoteStream: (stream: MediaStream, connection: WebRTCConnection) => void;
         OnRemoteStreamlost:(streamId: string, peerId: string) => void
-
         OnLocalStream: (stream: MediaStream) => void
         OnContextConnected: (rtcPeerConnection: RTCPeerConnection) => void
         OnContextDisconnected: (rtcPeerConnection: RTCPeerConnection) => void
-
         OnConnectTo(peerConnections: Array<PeerConnection>) {
             this.Connect(peerConnections);
         }
         OnConnected(peerId: string) {
             this.OnContextConnected(this.getPeerConnection(peerId))
-
         }
         OnDisconnected(peerId: string) {
             let peerConnection = this.getPeerConnection(peerId);
             peerConnection.close();
             this.OnContextDisconnected(peerConnection);
             this.removePeerConnection(peerId);
-
         }
 
         private onCandidate(event:any) {
@@ -509,9 +472,36 @@ export namespace ThorIOClient {
             return rtcPeerConnection;
         }
 
+        findPeerConnection(id:string):WebRTCConnection{
+            let i = this.getPeerIndex(id);
+            return this.Peers[i];
+        }
 
-        findPeerConnection(pre:Function):Array<WebRTCConnection>{
-            throw "Not implemented";
+        getPeerIndex = function(id:string):number{
+                return this.Peers.findIndex ( function (pre) { return pre.id === id });
+        }
+
+        reconnectAll():Array<PeerConnection>{
+            let peers = this.Peers.map( (peer:WebRTCConnection ) => {
+                let p =  new PeerConnection();
+                    p.peerId  = peer.id
+                    p.context = this.Context;
+
+                return p;
+            });
+
+            peers.forEach( (p:any) => {
+                    var peer = this.getPeerIndex(p.peerId);  
+                        var peer = this.getPeerIndex(p.peerId);                 
+                            this.Peers[peer].RTCPeer.close(); // close the peer
+                            this.Peers[peer].streams.forEach( (stream:MediaStream) =>{
+                                this.OnRemoteStreamlost(stream.id,p.peerId); //  notify peer/stream lost!
+                            });
+            });
+
+            this.Peers = new  Array<WebRTCConnection>();
+            this.Connect(peers);
+            return peers;
         }
 
         private getPeerConnection(id: string): RTCPeerConnection {
@@ -556,12 +546,15 @@ export namespace ThorIOClient {
                 });
             return peerConnection;
         }
-
         Disconnect() {
             this.Peers.forEach((connection: WebRTCConnection) => {
                 connection.RTCPeer.close();
             });
             this.ChangeContext(Math.random().toString(36).substring(2));
+        }
+        DisconnectPeer(id:string):void{
+                let peer = this.findPeerConnection(id);
+                peer.RTCPeer.close();
         }
         Connect(peerConnections: Array<PeerConnection>): WebRTC {
             peerConnections.forEach((peerConnection: PeerConnection) => {
@@ -608,8 +601,7 @@ export namespace ThorIOClient {
                     this.GetProxy(message.C).Dispatch(message.T, message.D);
 
                 } else {
-
-                    let message = ThorIOClient.Message.fromArrayBuffer(event.data);
+                    let message = ThorIOClient.BinaryMessage.fromArrayBuffer(event.data);
                     this.GetProxy(message.C).Dispatch(message.T, message.D, message.B)
                 }
 
