@@ -1,4 +1,5 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var ThorIOClient;
 (function (ThorIOClient) {
     var BinaryMessage = (function () {
@@ -9,7 +10,6 @@ var ThorIOClient;
         }
         BinaryMessage.fromArrayBuffer = function (buffer) {
             var bytes = new Uint8Array(buffer);
-            var headerLen = 8;
             var header = bytes.slice(0, 8);
             var payloadLength = ThorIOClient.Utils.arrayToLong(header);
             var start = header.byteLength + payloadLength;
@@ -324,10 +324,12 @@ var ThorIOClient;
             var _this = this;
             var pc = this.getPeerConnection(event.sender);
             this.LocalStreams.forEach(function (stream) {
-                pc.addStream(stream);
+                stream.getTracks().forEach(function (track) {
+                    pc.addTrack(track, stream);
+                });
             });
             pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(event.message)));
-            pc.createAnswer(function (description) {
+            pc.createAnswer({ offerToReceiveAudio: true, offerToReceiveVideo: true }).then(function (description) {
                 pc.setLocalDescription(description).then(function () {
                     if (_this.bandwidthConstraints)
                         description.sdp = _this.setMediaBitrates(description.sdp);
@@ -337,16 +339,8 @@ var ThorIOClient;
                         message: JSON.stringify(description)
                     };
                     _this.brokerProxy.Invoke("contextSignal", answer);
-                }).catch(function (err) {
-                });
-            }, function (err) {
-                _this.addError(err);
-            }, {
-                mandatory: {
-                    "OfferToReceiveAudio": true,
-                    "OfferToReceiveVideo": true,
-                }
-            });
+                }).catch(function (err) { return _this.addError(err); });
+            }).catch(function (err) { return _this.addError(err); });
         };
         WebRTC.prototype.AddLocalStream = function (stream) {
             this.LocalStreams.push(stream);
@@ -398,12 +392,14 @@ var ThorIOClient;
                 }
                 ;
             };
-            rtcPeerConnection.onaddstream = function (event) {
+            rtcPeerConnection.ontrack = function (event) {
                 var connection = _this.Peers.filter(function (p) {
                     return p.id === id;
                 })[0];
-                connection.streams.push(event.stream);
-                _this.OnRemoteStream(event.stream, connection);
+                event.streams.forEach(function (p) {
+                    connection.streams.push(p);
+                });
+                _this.OnRemoteStream(event.streams[0], connection);
             };
             this.DataChannels.forEach(function (dataChannel) {
                 var pc = new PeerChannel(id, rtcPeerConnection.createDataChannel(dataChannel.Name), dataChannel.Name);
@@ -463,11 +459,13 @@ var ThorIOClient;
             var _this = this;
             var peerConnection = this.createPeerConnection(peer.peerId);
             this.LocalStreams.forEach(function (stream) {
-                peerConnection.addStream(stream);
+                stream.getTracks().forEach(function (track) {
+                    peerConnection.addTrack(track, stream);
+                });
                 _this.OnLocalStream(stream);
             });
-            peerConnection.createOffer(function (description) {
-                peerConnection.setLocalDescription(description, function () {
+            peerConnection.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true }).then(function (description) {
+                peerConnection.setLocalDescription(description).then(function () {
                     if (_this.bandwidthConstraints)
                         description.sdp = _this.setMediaBitrates(description.sdp);
                     var offer = {
@@ -476,16 +474,11 @@ var ThorIOClient;
                         message: JSON.stringify(description)
                     };
                     _this.brokerProxy.Invoke("contextSignal", offer);
-                }, function (err) {
+                }).catch(function (err) {
                     _this.addError(err);
                 });
-            }, function (err) {
+            }).catch(function (err) {
                 _this.addError(err);
-            }, {
-                mandatory: {
-                    "OfferToReceiveAudio": true,
-                    "OfferToReceiveVideo": true,
-                }
             });
             return peerConnection;
         };
@@ -646,12 +639,12 @@ var ThorIOClient;
         Proxy.prototype.OnOpen = function (event) { };
         Proxy.prototype.OnClose = function (event) { };
         Proxy.prototype.Connect = function () {
-            this.ws.send(new ThorIOClient.Message("___connect", {}, this.alias));
+            this.ws.send(new ThorIOClient.Message("___connect", {}, this.alias).toString());
             return this;
         };
         ;
         Proxy.prototype.Close = function () {
-            this.ws.send(new ThorIOClient.Message("___close", {}, this.alias));
+            this.ws.send(new ThorIOClient.Message("___close", {}, this.alias).toString());
             return this;
         };
         ;
@@ -659,7 +652,7 @@ var ThorIOClient;
             this.ws.send(new ThorIOClient.Message("___subscribe", {
                 topic: topic,
                 controller: this.alias
-            }, this.alias));
+            }, this.alias).toString());
             return this.On(topic, callback);
         };
         ;
@@ -667,7 +660,7 @@ var ThorIOClient;
             this.ws.send(new ThorIOClient.Message("___unsubscribe", {
                 topic: topic,
                 controller: this.alias
-            }, this.alias));
+            }, this.alias).toString());
         };
         ;
         Proxy.prototype.On = function (topic, fn) {
@@ -707,12 +700,12 @@ var ThorIOClient;
             }
         };
         Proxy.prototype.Invoke = function (topic, data, controller) {
-            this.ws.send(new ThorIOClient.Message(topic, data, controller || this.alias));
+            this.ws.send(new ThorIOClient.Message(topic, data, controller || this.alias).toString());
             return this;
         };
         ;
         Proxy.prototype.Publish = function (topic, data, controller) {
-            this.ws.send(new ThorIOClient.Message(topic, data, controller || this.alias));
+            this.ws.send(new ThorIOClient.Message(topic, data, controller || this.alias).toString());
             return this;
         };
         ;
