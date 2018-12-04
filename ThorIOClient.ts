@@ -37,7 +37,7 @@ export namespace ThorIOClient {
     }
 
     export class Message {
-        B: ArrayBuffer
+        B: ArrayBuffer | Uint8Array
         T: string;
         D: any;
         C: string;
@@ -48,7 +48,7 @@ export namespace ThorIOClient {
                 C: this.C
             }
         };
-        constructor(topic: string, object: any, controller: string, buffer?: ArrayBuffer) {
+        constructor(topic: string, object: any, controller: string, buffer?: ArrayBuffer | Uint8Array) {
             this.D = object;
             this.T = topic;
             this.C = controller;
@@ -806,7 +806,7 @@ export namespace ThorIOClient {
             this.Invoke(propName, propValue, controller || this.alias);
             return this;
         };
-        public Dispatch(topic: string, data: any, buffer?: ArrayBuffer) {
+        public Dispatch(topic: string, data: any, buffer?: ArrayBuffer | Uint8Array) {
             if (topic === "___open") {
                 this.IsConnected = true;
                 this.OnOpen(JSON.parse(data));

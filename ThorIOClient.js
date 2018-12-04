@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var ThorIOClient;
 (function (ThorIOClient) {
-    var BinaryMessage = (function () {
+    var BinaryMessage = /** @class */ (function () {
         function BinaryMessage(message, arrayBuffer) {
             this.arrayBuffer = arrayBuffer;
             this.header = new Uint8Array(ThorIOClient.Utils.longToArray(message.length));
@@ -28,7 +28,7 @@ var ThorIOClient;
         return BinaryMessage;
     }());
     ThorIOClient.BinaryMessage = BinaryMessage;
-    var Message = (function () {
+    var Message = /** @class */ (function () {
         function Message(topic, object, controller, buffer) {
             this.D = object;
             this.T = topic;
@@ -56,13 +56,13 @@ var ThorIOClient;
         return Message;
     }());
     ThorIOClient.Message = Message;
-    var PeerConnection = (function () {
+    var PeerConnection = /** @class */ (function () {
         function PeerConnection() {
         }
         return PeerConnection;
     }());
     ThorIOClient.PeerConnection = PeerConnection;
-    var WebRTCConnection = (function () {
+    var WebRTCConnection = /** @class */ (function () {
         function WebRTCConnection(id, rtcPeerConnection) {
             this.id = id;
             this.RTCPeer = rtcPeerConnection;
@@ -71,7 +71,7 @@ var ThorIOClient;
         return WebRTCConnection;
     }());
     ThorIOClient.WebRTCConnection = WebRTCConnection;
-    var Recorder = (function () {
+    var Recorder = /** @class */ (function () {
         function Recorder(stream, mimeType, ignoreMutedMedia) {
             var _this = this;
             this.stream = stream;
@@ -121,16 +121,16 @@ var ThorIOClient;
         return Recorder;
     }());
     ThorIOClient.Recorder = Recorder;
-    var PeerChannel = (function () {
+    var PeerChannel = /** @class */ (function () {
         function PeerChannel(peerId, dataChannel, label) {
             this.peerId = peerId;
             this.dataChannel = dataChannel;
-            this.label = label;
+            this.label = label; // name
         }
         return PeerChannel;
     }());
     ThorIOClient.PeerChannel = PeerChannel;
-    var DataChannel = (function () {
+    var DataChannel = /** @class */ (function () {
         function DataChannel(name, listeners) {
             this.listeners = listeners || new Array();
             this.PeerChannels = new Array();
@@ -191,7 +191,7 @@ var ThorIOClient;
         return DataChannel;
     }());
     ThorIOClient.DataChannel = DataChannel;
-    var BandwidthConstraints = (function () {
+    var BandwidthConstraints = /** @class */ (function () {
         function BandwidthConstraints(videobandwidth, audiobandwidth) {
             this.videobandwidth = videobandwidth;
             this.audiobandwidth = audiobandwidth;
@@ -199,7 +199,7 @@ var ThorIOClient;
         return BandwidthConstraints;
     }());
     ThorIOClient.BandwidthConstraints = BandwidthConstraints;
-    var WebRTC = (function () {
+    var WebRTC = /** @class */ (function () {
         function WebRTC(brokerProxy, rtcConfig) {
             var _this = this;
             this.brokerProxy = brokerProxy;
@@ -280,6 +280,7 @@ var ThorIOClient;
                         _this.onCandidate(signal);
                         break;
                     default:
+                        // do op
                         break;
                 }
             });
@@ -435,9 +436,9 @@ var ThorIOClient;
             peers.forEach(function (p) {
                 var peer = _this.getPeerIndex(p.peerId);
                 var peer = _this.getPeerIndex(p.peerId);
-                _this.Peers[peer].RTCPeer.close();
+                _this.Peers[peer].RTCPeer.close(); // close the peer
                 _this.Peers[peer].streams.forEach(function (stream) {
-                    _this.OnRemoteStreamlost(stream.id, p.peerId);
+                    _this.OnRemoteStreamlost(stream.id, p.peerId); //  notify peer/stream lost!
                 });
             });
             this.Peers = new Array();
@@ -459,6 +460,7 @@ var ThorIOClient;
             var _this = this;
             var peerConnection = this.createPeerConnection(peer.peerId);
             this.LocalStreams.forEach(function (stream) {
+                //peerConnection.addStream(stream);
                 stream.getTracks().forEach(function (track) {
                     peerConnection.addTrack(track, stream);
                 });
@@ -480,6 +482,26 @@ var ThorIOClient;
             }).catch(function (err) {
                 _this.addError(err);
             });
+            // peerConnection.createOffer( (description: RTCSessionDescription) => {
+            //     peerConnection.setLocalDescription(description, () => {
+            //         if(this.bandwidthConstraints) description.sdp = this.setMediaBitrates(description.sdp);
+            //        let offer = {
+            //             sender: this.LocalPeerId,
+            //             recipient: peer.peerId,
+            //             message: JSON.stringify(description)
+            //         };
+            //         this.brokerProxy.Invoke("contextSignal", offer);
+            //     }, (err:any) => {
+            //         this.addError(err);
+            //     });
+            // }, (err:any) => {
+            //     this.addError(err);
+            // }, {
+            //         mandatory: {
+            //             "OfferToReceiveAudio": true,
+            //             "OfferToReceiveVideo": true,
+            //         }
+            //     });
             return peerConnection;
         };
         WebRTC.prototype.Disconnect = function () {
@@ -513,7 +535,7 @@ var ThorIOClient;
         return WebRTC;
     }());
     ThorIOClient.WebRTC = WebRTC;
-    var Factory = (function () {
+    var Factory = /** @class */ (function () {
         function Factory(url, controllers, params) {
             var _this = this;
             this.url = url;
@@ -569,7 +591,7 @@ var ThorIOClient;
         return Factory;
     }());
     ThorIOClient.Factory = Factory;
-    var Listener = (function () {
+    var Listener = /** @class */ (function () {
         function Listener(topic, fn) {
             this.fn = fn;
             this.topic = topic;
@@ -578,7 +600,7 @@ var ThorIOClient;
         return Listener;
     }());
     ThorIOClient.Listener = Listener;
-    var Utils = (function () {
+    var Utils = /** @class */ (function () {
         function Utils() {
         }
         Utils.stingToBuffer = function (str) {
@@ -617,14 +639,14 @@ var ThorIOClient;
         return Utils;
     }());
     ThorIOClient.Utils = Utils;
-    var PropertyMessage = (function () {
+    var PropertyMessage = /** @class */ (function () {
         function PropertyMessage() {
             this.messageId = ThorIOClient.Utils.newGuid();
         }
         return PropertyMessage;
     }());
     ThorIOClient.PropertyMessage = PropertyMessage;
-    var Proxy = (function () {
+    var Proxy = /** @class */ (function () {
         function Proxy(alias, ws) {
             var _this = this;
             this.alias = alias;
