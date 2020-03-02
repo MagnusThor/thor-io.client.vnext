@@ -68,11 +68,11 @@ export namespace ThorIOClient {
     export class WebRTCConnection {
         id: string;
         RTCPeer: RTCPeerConnection;
-        streams: Array<MediaStream>;
+        stream: MediaStream;
         constructor(id: string, rtcPeerConnection: RTCPeerConnection) {
             this.id = id;
             this.RTCPeer = rtcPeerConnection;
-            this.streams = new Array<MediaStream>();
+            this.stream = new  MediaStream();
         }
     }
 
@@ -326,21 +326,26 @@ export namespace ThorIOClient {
         OnError: (err: any) => void
         OnContextCreated: (peerConnection: PeerConnection) => void
         OnContextChanged: (context: string) => void
-        OnRemoteStream: (stream: MediaStream, connection: WebRTCConnection) => void;
-        OnRemoteStreamlost:(streamId: string, peerId: string) => void
+        OnRemoteTrack: (track: MediaStreamTrack, connection: WebRTCConnection) => void;
+      
+        //  OnRemoteStreamlost:(streamId: string, peerId: string) => void
+      
         OnLocalStream: (stream: MediaStream) => void
-        OnContextConnected: (rtcPeerConnection: RTCPeerConnection) => void
-        OnContextDisconnected: (rtcPeerConnection: RTCPeerConnection) => void
+        
+        OnContextConnected: (webRTCConnection:WebRTCConnection,rtcPeerConnection: RTCPeerConnection) => void
+        OnContextDisconnected: (webRTCConnection:WebRTCConnection,rtcPeerConnection: RTCPeerConnection) => void
         OnConnectTo(peerConnections: Array<PeerConnection>) {
             this.Connect(peerConnections);
         }
         OnConnected(peerId: string) {
-            this.OnContextConnected(this.getPeerConnection(peerId))
+            this.OnContextConnected(
+                this.findPeerConnection(peerId),
+                this.getPeerConnection(peerId))
         }
         OnDisconnected(peerId: string) {
             let peerConnection = this.getPeerConnection(peerId);
+            this.OnContextDisconnected(this.findPeerConnection(peerId),peerConnection);
             peerConnection.close();
-            this.OnContextDisconnected(peerConnection);
             this.removePeerConnection(peerId);
         }
 
@@ -395,9 +400,7 @@ export namespace ThorIOClient {
             let connection = this.Peers.filter((conn: WebRTCConnection) => {
                 return conn.id === id;
             })[0];
-            connection.streams.forEach((stream: MediaStream) => {
-                this.OnRemoteStreamlost(stream.id, connection.id)
-            });
+            
             let index = this.Peers.indexOf(connection);
             if (index > -1)
                 this.Peers.splice(index, 1);
@@ -433,11 +436,8 @@ export namespace ThorIOClient {
                 let connection = this.Peers.filter((p) => {
                     return p.id === id;
                 })[0];
-                event.streams.forEach( (p:MediaStream) => {
-                    connection.streams.push(p);
-                });
-               
-                this.OnRemoteStream(event.streams[0], connection)
+                connection.stream.addTrack(event.track);               
+                this.OnRemoteTrack(event.track, connection)
             }
           
 
@@ -477,17 +477,7 @@ export namespace ThorIOClient {
                     p.context = this.Context;
 
                 return p;
-            });
-
-            peers.forEach( (p:any) => {
-                    var peer = this.getPeerIndex(p.peerId);  
-                        var peer = this.getPeerIndex(p.peerId);                 
-                            this.Peers[peer].RTCPeer.close(); // close the peer
-                            this.Peers[peer].streams.forEach( (stream:MediaStream) =>{
-                                this.OnRemoteStreamlost(stream.id,p.peerId); //  notify peer/stream lost!
-                            });
-            });
-
+            });            
             this.Peers = new  Array<WebRTCConnection>();
             this.Connect(peers);
             return peers;
@@ -533,31 +523,6 @@ export namespace ThorIOClient {
                 this.addError(err);
             });
 
-
-           
-            // peerConnection.createOffer( (description: RTCSessionDescription) => {
-            //     peerConnection.setLocalDescription(description, () => {
-            //         if(this.bandwidthConstraints) description.sdp = this.setMediaBitrates(description.sdp);
-                 
-            //        let offer = {
-            //             sender: this.LocalPeerId,
-            //             recipient: peer.peerId,
-            //             message: JSON.stringify(description)
-            //         };
-
-            //         this.brokerProxy.Invoke("contextSignal", offer);
-
-            //     }, (err:any) => {
-            //         this.addError(err);
-            //     });
-            // }, (err:any) => {
-            //     this.addError(err);
-            // }, {
-            //         mandatory: {
-            //             "OfferToReceiveAudio": true,
-            //             "OfferToReceiveVideo": true,
-            //         }
-            //     });
             return peerConnection;
         }
         Disconnect() {

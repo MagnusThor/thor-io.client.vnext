@@ -3,19 +3,19 @@ export declare namespace ThorIOClient {
         arrayBuffer: ArrayBuffer;
         Buffer: ArrayBuffer;
         private header;
-        static fromArrayBuffer(buffer: ArrayBuffer): any;
+        static fromArrayBuffer(buffer: ArrayBuffer): Message;
         constructor(message: string, arrayBuffer: ArrayBuffer);
-        private joinBuffers(a, b);
+        private joinBuffers;
     }
     class Message {
-        B: ArrayBuffer;
+        B: ArrayBuffer | Uint8Array;
         T: string;
         D: any;
         C: string;
         readonly JSON: any;
-        constructor(topic: string, object: any, controller: string, buffer?: ArrayBuffer);
+        constructor(topic: string, object: any, controller: string, buffer?: ArrayBuffer | Uint8Array);
         toString(): string;
-        static fromArrayBuffer(buffer: ArrayBuffer): any;
+        static fromArrayBuffer(buffer: ArrayBuffer): Message;
     }
     class PeerConnection {
         context: string;
@@ -24,7 +24,7 @@ export declare namespace ThorIOClient {
     class WebRTCConnection {
         id: string;
         RTCPeer: RTCPeerConnection;
-        streams: Array<any>;
+        stream: MediaStream;
         constructor(id: string, rtcPeerConnection: RTCPeerConnection);
     }
     class Recorder {
@@ -35,9 +35,9 @@ export declare namespace ThorIOClient {
         private blobs;
         IsRecording: boolean;
         constructor(stream: MediaStream, mimeType: string, ignoreMutedMedia: any);
-        private handleStop(event);
+        private handleStop;
         OnRecordComplated(blob: any, blobUrl: string): void;
-        private handleDataAvailable(event);
+        private handleDataAvailable;
         IsTypeSupported(type: string): void;
         GetStats(): any;
         Stop(): void;
@@ -59,7 +59,7 @@ export declare namespace ThorIOClient {
         OnClose(event: Event, peerId: string): void;
         OnMessage(event: MessageEvent): void;
         Close(): void;
-        private findListener(topic);
+        private findListener;
         Off(topic: string): void;
         Invoke(topic: string, data: any, controller?: string): ThorIOClient.DataChannel;
         AddPeerChannel(pc: PeerChannel): void;
@@ -83,34 +83,36 @@ export declare namespace ThorIOClient {
         bandwidthConstraints: BandwidthConstraints;
         constructor(brokerProxy: ThorIOClient.Proxy, rtcConfig: any);
         setBandwithConstraints(videobandwidth: number, audiobandwidth: number): void;
-        private setMediaBitrates(sdp);
-        private setMediaBitrate(sdp, media, bitrate);
+        private setMediaBitrates;
+        private setMediaBitrate;
         CreateDataChannel(name: string): ThorIOClient.DataChannel;
         RemoveDataChannel(name: string): void;
-        private signalHandlers();
-        private addError(err);
+        private signalHandlers;
+        private addError;
         OnError: (err: any) => void;
         OnContextCreated: (peerConnection: PeerConnection) => void;
         OnContextChanged: (context: string) => void;
-        OnRemoteStream: (stream: MediaStream, connection: WebRTCConnection) => void;
-        OnRemoteStreamlost: (streamId: string, peerId: string) => void;
+        OnRemoteTrack: (track: MediaStreamTrack, connection: WebRTCConnection) => void;
         OnLocalStream: (stream: MediaStream) => void;
-        OnContextConnected: (rtcPeerConnection: RTCPeerConnection) => void;
-        OnContextDisconnected: (rtcPeerConnection: RTCPeerConnection) => void;
+        OnContextConnected: (webRTCConnection: WebRTCConnection, rtcPeerConnection: RTCPeerConnection) => void;
+        OnContextDisconnected: (webRTCConnection: WebRTCConnection, rtcPeerConnection: RTCPeerConnection) => void;
         OnConnectTo(peerConnections: Array<PeerConnection>): void;
         OnConnected(peerId: string): void;
         OnDisconnected(peerId: string): void;
-        private onCandidate(event);
-        private onAnswer(event);
-        private onOffer(event);
+        private onCandidate;
+        private onAnswer;
+        private onOffer;
         AddLocalStream(stream: any): WebRTC;
         AddIceServer(iceServer: RTCIceServer): WebRTC;
-        private removePeerConnection(id);
-        private createPeerConnection(id);
-        findPeerConnection(pre: Function): Array<WebRTCConnection>;
-        private getPeerConnection(id);
-        private createOffer(peer);
+        private removePeerConnection;
+        private createPeerConnection;
+        findPeerConnection(id: string): WebRTCConnection;
+        getPeerIndex: (id: string) => number;
+        reconnectAll(): Array<PeerConnection>;
+        private getPeerConnection;
+        private createOffer;
         Disconnect(): void;
+        DisconnectPeer(id: string): void;
         Connect(peerConnections: Array<PeerConnection>): WebRTC;
         ChangeContext(context: string): WebRTC;
         ConnectPeers(): void;
@@ -119,7 +121,7 @@ export declare namespace ThorIOClient {
     class Factory {
         private url;
         private ws;
-        private toQuery(obj);
+        private toQuery;
         private proxys;
         IsConnected: boolean;
         constructor(url: string, controllers: Array<string>, params?: any);
@@ -162,13 +164,13 @@ export declare namespace ThorIOClient {
         Subscribe(topic: string, callback: any): Listener;
         Unsubscribe(topic: string): void;
         On(topic: string, fn: any): Listener;
-        private findListener(topic);
+        private findListener;
         Off(topic: string): void;
         InvokeBinary(buffer: ArrayBuffer): ThorIOClient.Proxy;
         PublishBinary(buffer: ArrayBuffer): ThorIOClient.Proxy;
         Invoke(topic: string, data: any, controller?: string): ThorIOClient.Proxy;
         Publish(topic: string, data: any, controller?: string): ThorIOClient.Proxy;
         SetProperty(propName: string, propValue: any, controller?: string): ThorIOClient.Proxy;
-        Dispatch(topic: string, data: any, buffer?: ArrayBuffer): void;
+        Dispatch(topic: string, data: any, buffer?: ArrayBuffer | Uint8Array): void;
     }
 }
