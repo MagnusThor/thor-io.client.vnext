@@ -349,10 +349,7 @@ export namespace ThorIOClient {
             let candidate = msg.iceCandidate;
             let pc = this.getPeerConnection(event.sender);
 
-            pc.addIceCandidate(new RTCIceCandidate({
-                sdpMLineIndex: candidate.label,
-                candidate: candidate.candidate
-            })).then(() => {
+            pc.addIceCandidate(new RTCIceCandidate(candidate)).then(() => {
             }).catch((err) => {
                 this.addError(err);
             });

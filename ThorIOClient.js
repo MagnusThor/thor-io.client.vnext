@@ -305,10 +305,7 @@ var ThorIOClient;
             var msg = JSON.parse(event.message);
             var candidate = msg.iceCandidate;
             var pc = this.getPeerConnection(event.sender);
-            pc.addIceCandidate(new RTCIceCandidate({
-                sdpMLineIndex: candidate.label,
-                candidate: candidate.candidate
-            })).then(function () {
+            pc.addIceCandidate(new RTCIceCandidate(candidate)).then(function () {
             }).catch(function (err) {
                 _this.addError(err);
             });

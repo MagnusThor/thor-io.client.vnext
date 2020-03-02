@@ -1,6 +1,6 @@
 {
   "name": "thor-io.client-vnext",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
