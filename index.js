@@ -1,7 +1,25 @@
 "use strict";
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
 Object.defineProperty(exports, "__esModule", { value: true });
-__export(require("./ThorIOClient"));
+var BandwidthConstraints_1 = require("./src/WebRTC/BandwidthConstraints");
+exports.BandwidthConstraints = BandwidthConstraints_1.BandwidthConstraints;
+var BinaryMessage_1 = require("./src/Messages/BinaryMessage");
+exports.BinaryMessage = BinaryMessage_1.BinaryMessage;
+var DataChannel_1 = require("./src/WebRTC/DataChannel");
+exports.DataChannel = DataChannel_1.DataChannel;
+var Factory_1 = require("./src/Factory");
+exports.Factory = Factory_1.Factory;
+var TextMessage_1 = require("./src/Messages/TextMessage");
+exports.Message = TextMessage_1.TextMessage;
+var Listener_1 = require("./src/Listener");
+exports.Listener = Listener_1.Listener;
+var PeerChannel_1 = require("./src/WebRTC/PeerChannel");
+exports.PeerChannel = PeerChannel_1.PeerChannel;
+var PropertyMessage_1 = require("./src/Messages/PropertyMessage");
+exports.PropertyMessage = PropertyMessage_1.PropertyMessage;
+var Proxy_1 = require("./src/Proxy");
+exports.Proxy = Proxy_1.Proxy;
+var Utils_1 = require("./src/Utils/Utils");
+exports.Utils = Utils_1.Utils;
+var WebRTC_1 = require("./src/WebRTC/WebRTC");
+exports.WebRTC = WebRTC_1.WebRTC;
 //# sourceMappingURL=index.js.map
