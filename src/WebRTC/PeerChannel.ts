@@ -5,6 +5,6 @@ export class PeerChannel {
     constructor(peerId:string, dataChannel:RTCDataChannel, label:string) {
         this.peerId = peerId;
         this.dataChannel = dataChannel;
-        this.label = label; // name
+        this.label = label; 
     }
 }

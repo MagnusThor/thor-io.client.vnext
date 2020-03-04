@@ -1,4 +1,10 @@
 import { BinaryMessage } from "./BinaryMessage";
+/**
+ * thor-io TextMessage (json)
+ *
+ * @export
+ * @class TextMessage
+ */
 export class TextMessage {
     B: ArrayBuffer | Uint8Array;
     T: string;

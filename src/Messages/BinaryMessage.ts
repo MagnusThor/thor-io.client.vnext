@@ -1,8 +1,22 @@
 import { Utils } from "../Utils/Utils";
 import { TextMessage } from "./TextMessage";
+/**
+ *  thor-io BinartMessage (json) 
+ *
+ * @export
+ * @class BinaryMessage
+ */
 export class BinaryMessage {
     Buffer: ArrayBuffer;
     private header: Uint8Array;
+    /**
+     * Convert a BinnayMessage to TextMessage ( extract embedeed TextMessage)
+     *
+     * @static
+     * @param {ArrayBuffer} buffer
+     * @returns {TextMessage}
+     * @memberof BinaryMessage
+     */
     static fromArrayBuffer(buffer: ArrayBuffer): TextMessage {
         let bytes = new Uint8Array(buffer);
         let header = bytes.slice(0, 8);

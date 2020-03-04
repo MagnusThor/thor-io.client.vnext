@@ -1,7 +1,10 @@
 export declare var MediaRecorder: any;
-
-
-
+/**
+ * Record a MediaStream
+ *
+ * @export
+ * @class Recorder
+ */
 export class Recorder {
     private recorder: any;
     private blobs: Array<any>;

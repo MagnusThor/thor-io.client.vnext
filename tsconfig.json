@@ -4,10 +4,10 @@
   "lib": ["ES2015","DOM"],
   "module": "commonjs",
   "moduleResolution": "node",
-  "sourceMap": true,
+  "sourceMap": false,
   "emitDecoratorMetadata": true,
   "experimentalDecorators": true,
-  "removeComments": false,
+  "removeComments": true,
   "noImplicitAny": true
   },
   "exclude": [

@@ -1,4 +1,12 @@
 export class Utils {
+    /**
+     * Coverts string to a Uint8Array
+     *
+     * @static
+     * @param {string} str
+     * @returns
+     * @memberof Utils
+     */
     static stingToBuffer(str: string) {
         let len = str.length;
         var arr = new Array(len);
@@ -7,6 +15,14 @@ export class Utils {
         }
         return new Uint8Array(arr);
     }
+    /**
+     * Uint8Array to long(number)
+     *
+     * @static
+     * @param {Uint8Array} byteArray
+     * @returns {number}
+     * @memberof Utils
+     */
     static arrayToLong(byteArray: Uint8Array): number {
         var value = 0;
         let byteLength = byteArray.byteLength;
@@ -15,6 +31,14 @@ export class Utils {
         }
         return value;
     }
+    /**
+     * long(number) to Uint8Array
+     *
+     * @static
+     * @param {number} long
+     * @returns {Uint8Array}
+     * @memberof Utils
+     */
     static longToArray(long: number): Uint8Array {
         var byteArray = new Uint8Array(8);
         let byteLength = byteArray.length;
@@ -25,11 +49,17 @@ export class Utils {
         }
         return byteArray;
     }
+    /**
+     * Create a UUID/GUID
+     *
+     * @static
+     * @returns
+     * @memberof Utils
+     */
     static newGuid() {
-        function s4() {
+        const s4 = () => {
             return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-        }
-        ;
+        }        
         return s4() + s4() + "-" + s4() + "-" + s4() + "-" + s4() + "-" + s4() + s4() + s4();
     }
 }

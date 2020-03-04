@@ -1,3 +1,9 @@
+/**
+ * Listener object for thor-io.vnext message event 
+ *
+ * @export
+ * @class Listener
+ */
 export class Listener {
     fn: Function;
     topic: string;
