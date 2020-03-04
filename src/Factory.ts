@@ -1,7 +1,7 @@
 import { BinaryMessage } from "./Messages/BinaryMessage";
 import { Controller } from "./Controller";
 /**
- * Create a connection to a thor-io.vnext server and its
+ * Create a connection to a thor-io.vnext server and its controllers
  *
  * @export
  * @class Factory
@@ -12,7 +12,7 @@ export class Factory {
         return `?${Object.keys(obj).map(key => (encodeURIComponent(key) + "=" +
             encodeURIComponent(obj[key]))).join("&")}`;
     }
-    private proxys: Map<string,Controller>
+    private controllers: Map<string,Controller>
     public IsConnected: boolean;   
     /**
      * Creates an instance of Factory (Connection).
@@ -22,21 +22,21 @@ export class Factory {
      * @memberof Factory
      */
     constructor(private url: string, controllers: Array<string>, params?: any) {
-        this.proxys = new Map<string,Controller>();
+        this.controllers = new Map<string,Controller>();
         this.ws = new WebSocket(url + this.toQuery(params || {}));
         this.ws.binaryType = "arraybuffer";
         controllers.forEach(alias => {
-            this.proxys.set(alias,new Controller(alias, this.ws));
+            this.controllers.set(alias,new Controller(alias, this.ws));
             //this.proxys.push(new Controller(alias, this.ws));
         });
         this.ws.onmessage = event => {
             if (typeof (event.data) !== "object") {
                 let message = JSON.parse(event.data);
-                this.GetProxy(message.C).Dispatch(message.T, message.D);
+                this.GetController(message.C).Dispatch(message.T, message.D);
             }
             else {
                 let message = BinaryMessage.fromArrayBuffer(event.data);
-                this.GetProxy(message.C).Dispatch(message.T, message.D, message.B);
+                this.GetController(message.C).Dispatch(message.T, message.D, message.B);
             }
         };
         this.ws.onclose = event => {
@@ -48,7 +48,7 @@ export class Factory {
         };
         this.ws.onopen = event => {
             this.IsConnected = true;
-            this.OnOpen.apply(this, this.proxys);
+            this.OnOpen.apply(this, Array.from(this.controllers.values()));
         };
     }
     /**
@@ -66,17 +66,17 @@ export class Factory {
      * @returns {Controller}
      * @memberof Factory
      */
-    GetProxy(alias: string): Controller {
-        return this.proxys.get(alias);        
+    GetController(alias: string): Controller {
+        return this.controllers.get(alias);        
     }    
     /**
-     * Remove the proxy
+     * Remove the controller
      *
      * @param {string} alias
      * @memberof Factory
      */
-    RemoveProxy(alias: string) {
-        this.proxys.delete(alias);       
+    RemoveController(alias: string) {
+        this.controllers.delete(alias);       
     }
     /**
      * Fires when connection is established to the thor-io.vnext server
@@ -84,7 +84,7 @@ export class Factory {
      * @param {*} proxys
      * @memberof Factory
      */
-    OnOpen(proxys: any) { }
+    OnOpen(controllers: any) { }
     /**
      *  Fires when a connection goes wrong
      *
