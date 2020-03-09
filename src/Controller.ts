@@ -8,9 +8,9 @@ import { Listener } from "./Listener";
  */
 export class Controller {
     IsConnected: boolean;
-    private listeners: Array<Listener>;
+    private listeners: Map<string,Listener>;
     constructor(public alias: string, private ws: WebSocket) {
-        this.listeners = new Array<Listener>();
+        this.listeners = new Map<string,Listener>();
         this.IsConnected = false;
         this.On("___error", (err: any) => {
             this.OnError(err);
@@ -95,8 +95,8 @@ export class Controller {
      * @memberof Controller
      */
     On(topic: string, fn: any): Listener {
-        var listener = new Listener(topic, fn);
-        this.listeners.push(listener);
+        let listener = new Listener(topic, fn);
+        this.listeners.set(topic,listener);
         return listener;
     }
      /**
@@ -106,15 +106,11 @@ export class Controller {
      * @memberof Controller
      */
     Off(topic: string) {
-        let index = this.listeners.indexOf(this.findListener(topic));
-        if (index >= 0)
-            this.listeners.splice(index, 1);
+        this.listeners.delete(topic);
     }
     private findListener(topic: string): Listener {
-        let listener = this.listeners.find((pre: Listener) => {
-            return pre.topic === topic;
-        });
-        return listener;
+      
+        return this.listeners.get(topic);
     }   
     /**
      * Send and ArrayBuffer

@@ -7,7 +7,7 @@ var Controller = (function () {
         var _this = this;
         this.alias = alias;
         this.ws = ws;
-        this.listeners = new Array();
+        this.listeners = new Map();
         this.IsConnected = false;
         this.On("___error", function (err) {
             _this.OnError(err);
@@ -41,19 +41,14 @@ var Controller = (function () {
     };
     Controller.prototype.On = function (topic, fn) {
         var listener = new Listener_1.Listener(topic, fn);
-        this.listeners.push(listener);
+        this.listeners.set(topic, listener);
         return listener;
     };
     Controller.prototype.Off = function (topic) {
-        var index = this.listeners.indexOf(this.findListener(topic));
-        if (index >= 0)
-            this.listeners.splice(index, 1);
+        this.listeners.delete(topic);
     };
     Controller.prototype.findListener = function (topic) {
-        var listener = this.listeners.find(function (pre) {
-            return pre.topic === topic;
-        });
-        return listener;
+        return this.listeners.get(topic);
     };
     Controller.prototype.InvokeBinary = function (buffer) {
         if (buffer instanceof ArrayBuffer) {

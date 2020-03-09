@@ -90,10 +90,8 @@ export class WebRTC {
      * @memberof WebRTC
      */
     constructor(private brokerController: Controller, private rtcConfig: any) {
-
         this.Errors = new Array<any>();
         this.LocalStreams = new Array<MediaStream>();
-       
         this.DataChannels = new Map<string,DataChannel>();
         this.Peers = new Map<string,WebRTCConnection>();
         

@@ -8,19 +8,16 @@ import { Listener } from "../Listener";
  * @class DataChannel
  */
 export class DataChannel {
-    private listeners: Array<Listener>;
+    private listeners: Map<string,Listener>;
     public Name: string;
-    public PeerChannels: Array<PeerChannel>;
-    constructor(name: string, listeners?: Array<Listener>) {
-        this.listeners = listeners || new Array<Listener>();
-        this.PeerChannels = new Array<PeerChannel>();
+    public PeerChannels: Map<string,PeerChannel>;
+    constructor(name: string, listeners?: Map<string,Listener>) {
+        this.listeners = listeners || new Map<string,Listener>();
+        this.PeerChannels = new Map<string,PeerChannel>();
         this.Name = name;
     }
     private findListener(topic: string): Listener {
-        let listener = this.listeners.find((pre: Listener) => {
-            return pre.topic === topic;
-        });
-        return listener;
+        return this.listeners.get(topic);       
     }
     /**
      * Add a listener for specific topic
@@ -32,7 +29,7 @@ export class DataChannel {
      */
     On(topic: string, fn: any): Listener {
         var listener = new Listener(topic, fn);
-        this.listeners.push(listener);
+        this.listeners.set(topic,listener);
         return listener;
     }
     /**
@@ -41,10 +38,8 @@ export class DataChannel {
      * @param {string} topic
      * @memberof DataChannel
      */
-    Off(topic: string) {
-        let index = this.listeners.indexOf(this.findListener(topic));
-        if (index >= 0)
-            this.listeners.splice(index, 1);
+    Off(topic: string):boolean {
+       return this.listeners.delete(topic)
     }
     /**
      * Fires then the DataChannel is ready and open
@@ -103,14 +98,9 @@ export class DataChannel {
         return this;
     }
     addPeerChannel(pc: PeerChannel) {
-        this.PeerChannels.push(pc);
+       this.PeerChannels.set(pc.peerId,pc); 
     }
-    removePeerChannel(id:any) {
-        let match = this.PeerChannels.find((p: PeerChannel) => {
-            return p.peerId === id;
-        });
-        let index = this.PeerChannels.indexOf(match);
-        if (index > -1)
-            this.PeerChannels.splice(index, 1);
+    removePeerChannel(id:any):boolean {
+      return this.PeerChannels.delete(id);
     }
 }

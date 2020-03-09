@@ -4,25 +4,20 @@ var TextMessage_1 = require("../Messages/TextMessage");
 var Listener_1 = require("../Listener");
 var DataChannel = (function () {
     function DataChannel(name, listeners) {
-        this.listeners = listeners || new Array();
-        this.PeerChannels = new Array();
+        this.listeners = listeners || new Map();
+        this.PeerChannels = new Map();
         this.Name = name;
     }
     DataChannel.prototype.findListener = function (topic) {
-        var listener = this.listeners.find(function (pre) {
-            return pre.topic === topic;
-        });
-        return listener;
+        return this.listeners.get(topic);
     };
     DataChannel.prototype.On = function (topic, fn) {
         var listener = new Listener_1.Listener(topic, fn);
-        this.listeners.push(listener);
+        this.listeners.set(topic, listener);
         return listener;
     };
     DataChannel.prototype.Off = function (topic) {
-        var index = this.listeners.indexOf(this.findListener(topic));
-        if (index >= 0)
-            this.listeners.splice(index, 1);
+        return this.listeners.delete(topic);
     };
     DataChannel.prototype.OnOpen = function (event, peerId) { };
     DataChannel.prototype.OnClose = function (event, peerId) { };
@@ -47,15 +42,10 @@ var DataChannel = (function () {
         return this;
     };
     DataChannel.prototype.addPeerChannel = function (pc) {
-        this.PeerChannels.push(pc);
+        this.PeerChannels.set(pc.peerId, pc);
     };
     DataChannel.prototype.removePeerChannel = function (id) {
-        var match = this.PeerChannels.find(function (p) {
-            return p.peerId === id;
-        });
-        var index = this.PeerChannels.indexOf(match);
-        if (index > -1)
-            this.PeerChannels.splice(index, 1);
+        return this.PeerChannels.delete(id);
     };
     return DataChannel;
 }());
