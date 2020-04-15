@@ -17,7 +17,7 @@ var BinaryMessage = (function () {
         var stop = buffer.byteLength - start;
         var messageBuffer = bytes.slice(start, stop);
         var message = JSON.parse(String.fromCharCode.apply(null, new Uint16Array(bytesMessage)));
-        return new TextMessage_1.TextMessage(message.T, message.D, message.C, messageBuffer);
+        return new TextMessage_1.TextMessage(message.T, message.D, message.C, messageBuffer, message.I, message.F);
     };
     BinaryMessage.prototype.joinBuffers = function (a, b) {
         var newBuffer = new Uint8Array(a.byteLength + b.byteLength);

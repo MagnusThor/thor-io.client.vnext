@@ -1,8 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var PeerConnection = (function () {
-    function PeerConnection() {
-    }
-    return PeerConnection;
-}());
+class PeerConnection {
+}
 exports.PeerConnection = PeerConnection;

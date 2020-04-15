@@ -17,12 +17,12 @@ var Controller = (function () {
     Controller.prototype.OnOpen = function (event) { };
     Controller.prototype.OnClose = function (event) { };
     Controller.prototype.Connect = function () {
-        this.ws.send(new TextMessage_1.TextMessage("___connect", {}, this.alias).toString());
+        this.ws.send(new TextMessage_1.TextMessage("___connect", {}, this.alias, null, null, true).toString());
         return this;
     };
     ;
     Controller.prototype.Close = function () {
-        this.ws.send(new TextMessage_1.TextMessage("___close", {}, this.alias).toString());
+        this.ws.send(new TextMessage_1.TextMessage("___close", {}, this.alias, null, null, true).toString());
         return this;
     };
     ;
@@ -69,7 +69,7 @@ var Controller = (function () {
         }
     };
     Controller.prototype.Invoke = function (method, data, controller) {
-        this.ws.send(new TextMessage_1.TextMessage(method, data, controller || this.alias).toString());
+        this.ws.send(new TextMessage_1.TextMessage(method, data, controller || this.alias, null, null, true).toString());
         return this;
     };
     Controller.prototype.Publish = function (topic, data, controller) {

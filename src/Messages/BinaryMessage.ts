@@ -25,8 +25,9 @@ export class BinaryMessage {
         let bytesMessage = bytes.slice(header.byteLength, start);
         let stop = buffer.byteLength - start;
         let messageBuffer = bytes.slice(start, stop);
-        let message = JSON.parse(String.fromCharCode.apply(null, new Uint16Array(bytesMessage)));
-        return new TextMessage(message.T, message.D, message.C, messageBuffer);
+        let message = JSON.parse(String.fromCharCode.apply(null, new Uint16Array(bytesMessage))) as TextMessage;
+
+        return new TextMessage(message.T, message.D, message.C, messageBuffer,message.I,message.F);
     }
     constructor(message: string, public arrayBuffer: ArrayBuffer) {
         this.header = new Uint8Array(Utils.longToArray(message.length));

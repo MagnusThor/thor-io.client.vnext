@@ -44,11 +44,13 @@ var WebRTC = (function () {
         this.Connect(peerConnections);
     };
     WebRTC.prototype.onConnected = function (peerId) {
-        this.OnContextConnected(this.findPeerConnection(peerId), this.getPeerConnection(peerId));
+        if (this.OnContextConnected)
+            this.OnContextConnected(this.findPeerConnection(peerId), this.getPeerConnection(peerId));
     };
     WebRTC.prototype.OnDisconnected = function (peerId) {
         var peerConnection = this.getPeerConnection(peerId);
-        this.OnContextDisconnected(this.findPeerConnection(peerId), peerConnection);
+        if (this.OnContextDisconnected)
+            this.OnContextDisconnected(this.findPeerConnection(peerId), peerConnection);
         peerConnection.close();
         this.removePeerConnection(peerId);
     };
@@ -170,34 +172,40 @@ var WebRTC = (function () {
                     _this.onConnected(id);
                     break;
                 case "disconnected":
+                    _this.cleanUp(id);
                     _this.OnDisconnected(id);
                     break;
             }
-            ;
         };
         rtcPeerConnection.ontrack = function (event) {
             var connection = _this.Peers.get(id);
             connection.stream.addTrack(event.track);
-            _this.OnRemoteTrack(event.track, connection);
+            if (_this.OnRemoteTrack)
+                _this.OnRemoteTrack(event.track, connection);
         };
         this.DataChannels.forEach(function (dataChannel) {
-            var pc = new PeerChannel_1.PeerChannel(id, rtcPeerConnection.createDataChannel(dataChannel.Name), dataChannel.Name);
+            var pc = new PeerChannel_1.PeerChannel(id, rtcPeerConnection.createDataChannel(dataChannel.label), dataChannel.label);
             dataChannel.addPeerChannel(pc);
             rtcPeerConnection.ondatachannel = function (event) {
                 var channel = event.channel;
                 channel.onopen = function (event) {
-                    dataChannel.OnOpen(event, id);
+                    _this.DataChannels.get(channel.label).OnOpen(event, id, channel.label);
                 };
                 channel.onclose = function (event) {
-                    dataChannel.removePeerChannel(id);
-                    dataChannel.OnClose(event, id);
+                    _this.DataChannels.get(channel.label).removePeerChannel(id);
+                    _this.DataChannels.get(channel.label).OnClose(event, id, channel.label);
                 };
                 channel.onmessage = function (message) {
-                    dataChannel.onMessage(message);
+                    _this.DataChannels.get(channel.label).onMessage(message);
                 };
             };
         });
         return rtcPeerConnection;
+    };
+    WebRTC.prototype.cleanUp = function (id) {
+        this.DataChannels.forEach(function (d) {
+            d.removePeerChannel(id);
+        });
     };
     WebRTC.prototype.findPeerConnection = function (id) {
         return this.Peers.get(id);

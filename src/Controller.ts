@@ -44,7 +44,7 @@ export class Controller {
      * @memberof Controller
      */
     Connect() {
-        this.ws.send(new TextMessage("___connect", {}, this.alias).toString());
+        this.ws.send(new TextMessage("___connect", {}, this.alias,null,null,true).toString());
         return this;
     }
     ;
@@ -55,7 +55,7 @@ export class Controller {
      * @memberof Controller
      */
     Close() {
-        this.ws.send(new TextMessage("___close", {}, this.alias).toString());
+        this.ws.send(new TextMessage("___close", {}, this.alias,null,null,true).toString());
         return this;
     }
     ;
@@ -154,7 +154,7 @@ export class Controller {
      * @memberof Controller
      */
     Invoke(method: string, data: any, controller?: string): Controller {
-        this.ws.send(new TextMessage(method, data, controller || this.alias).toString());
+        this.ws.send(new TextMessage(method, data, controller || this.alias,null,null,true).toString());
         return this;
     }    
     /**

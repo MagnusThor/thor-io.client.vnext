@@ -1,11 +1,11 @@
 import { PeerConnection } from "./PeerConnection";
 import { WebRTCConnection } from "./WebRTCConnection";
 import { PeerChannel } from "./PeerChannel";
-import { DataChannel } from "./DataChannel";
+import { DataChannel } from './DataChannel';
 import { BandwidthConstraints } from "./BandwidthConstraints";
 import { Controller } from "../Controller";
 /**
- *
+ * 
  *
  * @export
  * @class WebRTC
@@ -15,7 +15,7 @@ export class WebRTC {
     public Peer: RTCPeerConnection;
     public DataChannels: Map<string,DataChannel>;
     public LocalPeerId: string;
-    public Context: string;
+    public Context: any;
     public LocalStreams: Array<any>;
     public Errors: Array<any>;
     public bandwidthConstraints: BandwidthConstraints;   
@@ -37,7 +37,7 @@ export class WebRTC {
      *
      * @memberof WebRTC
      */
-    OnContextChanged: (context: string) => void;
+    OnContextChanged: (context: {context:string,peerId:string}) => void;
    
     /**
      * When a remote Peer adds an MediaTrack 1-n
@@ -69,7 +69,8 @@ export class WebRTC {
     }
 
     private onConnected(peerId: string) {
-        this.OnContextConnected(this.findPeerConnection(peerId), this.getPeerConnection(peerId));
+        if(this.OnContextConnected)
+         this.OnContextConnected(this.findPeerConnection(peerId), this.getPeerConnection(peerId));
     }
     /**
      * Fires when an RTCPeerConnection is lost
@@ -79,7 +80,8 @@ export class WebRTC {
      */
     OnDisconnected(peerId: string) {
         let peerConnection = this.getPeerConnection(peerId);
-        this.OnContextDisconnected(this.findPeerConnection(peerId), peerConnection);
+        if(this.OnContextDisconnected)
+            this.OnContextDisconnected(this.findPeerConnection(peerId), peerConnection);
         peerConnection.close();
         this.removePeerConnection(peerId);
     }
@@ -109,13 +111,12 @@ export class WebRTC {
                     break;               
             }
         });
-
         brokerController.On("contextCreated", (peer: PeerConnection) => {
             this.LocalPeerId = peer.peerId;
             this.Context = peer.context;
             this.OnContextCreated(peer);
         });
-        brokerController.On("contextChanged", (context: string) => {
+        brokerController.On("contextChanged", (context: any) => {
             this.Context = context;
             this.OnContextChanged(context);
         });
@@ -123,8 +124,6 @@ export class WebRTC {
             this.onConnectTo(peers);
         });
 
-
-       
     }
     /**
      * Set video and audio bandwidth constraints.
@@ -173,7 +172,7 @@ export class WebRTC {
      */
     CreateDataChannel(name: string): DataChannel {
         let channel = new DataChannel(name);
-        this.DataChannels.set(name,channel);        
+        this.DataChannels.set(name,channel);      
         return channel;
     }
     /**
@@ -268,40 +267,47 @@ export class WebRTC {
                 this.brokerController.Invoke("contextSignal", msg);
             }
         };
-        rtcPeerConnection.oniceconnectionstatechange = (event: any) => {
+        rtcPeerConnection.oniceconnectionstatechange = (event: any) => {            
             switch (event.target.iceConnectionState) {
                 case "connected":
                     this.onConnected(id);
                     break;
                 case "disconnected":
+                    this.cleanUp(id);                   
                     this.OnDisconnected(id);
                     break;
             }
-            ;
         };
         rtcPeerConnection.ontrack = (event: RTCTrackEvent) => {            
             let connection = this.Peers.get(id);
             connection.stream.addTrack(event.track);
-            this.OnRemoteTrack(event.track, connection);
+            if(this.OnRemoteTrack)
+                this.OnRemoteTrack(event.track, connection);
         };
-        this.DataChannels.forEach((dataChannel: DataChannel) => {
-            let pc = new PeerChannel(id, rtcPeerConnection.createDataChannel(dataChannel.Name), dataChannel.Name);
+        this.DataChannels.forEach((dataChannel: DataChannel) => {        
+            let pc = new PeerChannel(id, rtcPeerConnection.createDataChannel(dataChannel.label), dataChannel.label);        
             dataChannel.addPeerChannel(pc);
             rtcPeerConnection.ondatachannel = (event: RTCDataChannelEvent) => {
                 let channel = event.channel;
-                channel.onopen = (event: Event) => {
-                    dataChannel.OnOpen(event, id);
-                };
+                channel.onopen = (event: Event) => {                   
+                    this.DataChannels.get(channel.label).OnOpen(event, id,channel.label);
+                };    
                 channel.onclose = (event: any) => {
-                    dataChannel.removePeerChannel(id);
-                    dataChannel.OnClose(event, id);
+                    this.DataChannels.get(channel.label).removePeerChannel(id);
+                    this.DataChannels.get(channel.label).OnClose(event, id,channel.label);
                 };
                 channel.onmessage = (message: MessageEvent) => {
-                    dataChannel.onMessage(message);
+                    this.DataChannels.get(channel.label).onMessage(message);
+                  
                 };
             };
         });
         return rtcPeerConnection;
+    }
+    cleanUp(id: string) {
+        this.DataChannels.forEach( (d:DataChannel) => {
+            d.removePeerChannel(id);
+        });          
     }
     /**
      *  Find a WebRTCConnection based in it's id
