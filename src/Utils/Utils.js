@@ -1,37 +1,40 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-class Utils {
-    static stingToBuffer(str) {
-        let len = str.length;
+var Utils = (function () {
+    function Utils() {
+    }
+    Utils.stingToBuffer = function (str) {
+        var len = str.length;
         var arr = new Array(len);
-        for (let i = 0; i < len; i++) {
+        for (var i = 0; i < len; i++) {
             arr[i] = str.charCodeAt(i) & 0xFF;
         }
         return new Uint8Array(arr);
-    }
-    static arrayToLong(byteArray) {
+    };
+    Utils.arrayToLong = function (byteArray) {
         var value = 0;
-        let byteLength = byteArray.byteLength;
-        for (let i = byteLength - 1; i >= 0; i--) {
+        var byteLength = byteArray.byteLength;
+        for (var i = byteLength - 1; i >= 0; i--) {
             value = (value * 256) + byteArray[i];
         }
         return value;
-    }
-    static longToArray(long) {
+    };
+    Utils.longToArray = function (long) {
         var byteArray = new Uint8Array(8);
-        let byteLength = byteArray.length;
-        for (let index = 0; index < byteLength; index++) {
-            let byte = long & 0xff;
+        var byteLength = byteArray.length;
+        for (var index = 0; index < byteLength; index++) {
+            var byte = long & 0xff;
             byteArray[index] = byte;
             long = (long - byte) / 256;
         }
         return byteArray;
-    }
-    static newGuid() {
-        const s4 = () => {
+    };
+    Utils.newGuid = function () {
+        var s4 = function () {
             return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
         };
         return s4() + s4() + "-" + s4() + "-" + s4() + "-" + s4() + "-" + s4() + s4() + s4();
-    }
-}
+    };
+    return Utils;
+}());
 exports.Utils = Utils;

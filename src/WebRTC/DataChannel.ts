@@ -44,7 +44,7 @@ export class DataChannel {
      * @returns {DataChannelListner}
      * @memberof DataChannel
      */
-    On<T>(topic: string, fn: (data: T) => void): DataChannelListner {
+    On<T>(topic: string, fn: (message: T,arrayBuffer:ArrayBuffer) => void): DataChannelListner {
         var listener = new DataChannelListner(this.label, topic, fn);
         this.Listners.set(topic, listener);
         return listener;

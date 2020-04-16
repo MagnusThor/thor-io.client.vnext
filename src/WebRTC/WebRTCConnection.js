@@ -1,10 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-class WebRTCConnection {
-    constructor(id, rtcPeerConnection) {
+var WebRTCConnection = (function () {
+    function WebRTCConnection(id, rtcPeerConnection) {
         this.id = id;
         this.RTCPeer = rtcPeerConnection;
         this.stream = new MediaStream();
     }
-}
+    return WebRTCConnection;
+}());
 exports.WebRTCConnection = WebRTCConnection;
