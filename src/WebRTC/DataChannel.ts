@@ -2,6 +2,7 @@ import { TextMessage } from "../Messages/TextMessage";
 import { PeerChannel } from "./PeerChannel";
 import { DataChannelListner } from "../DataChannels/DataChannelListner";
 import { BinaryMessage } from '../Messages/BinaryMessage';
+import { Utils } from '../Utils/Utils';
 
 
 
@@ -18,16 +19,16 @@ export class DataChannel {
     public PeerChannels: Map<{ id: string, name: string }, PeerChannel>;
 
 
-    
+
     messageFragments: Map<string, {
-        msg: TextMessage, receiveBuffer: Array<any>
+        msg: TextMessage, receiveBuffer: ArrayBuffer
     }>;
 
     constructor(label: string, listeners?: Map<string, DataChannelListner>) {
         this.Listners = listeners || new Map<string, DataChannelListner>();
         this.PeerChannels = new Map<{ id: string, name: string }, PeerChannel>();
         this.label = label;
-        this.messageFragments = new Map<string, { msg: TextMessage, receiveBuffer: Array<any> }>();
+        this.messageFragments = new Map<string, { msg: TextMessage, receiveBuffer: ArrayBuffer }>();
     }
 
     private findListener(topic: string): DataChannelListner {
@@ -44,7 +45,7 @@ export class DataChannel {
      * @returns {DataChannelListner}
      * @memberof DataChannel
      */
-    On<T>(topic: string, fn: (message: T,arrayBuffer:ArrayBuffer) => void): DataChannelListner {
+    On<T>(topic: string, fn: (message: T, arrayBuffer: ArrayBuffer) => void): DataChannelListner {
         var listener = new DataChannelListner(this.label, topic, fn);
         this.Listners.set(topic, listener);
         return listener;
@@ -74,28 +75,34 @@ export class DataChannel {
      * @memberof DataChannel
      */
     OnClose(event: Event, peerId: string, name: string) { }
-
-    private addMessage(message: TextMessage) {        
+    /**
+     * Add a message fragment ( continuous messages )
+     *
+     * @private
+     * @param {TextMessage} message
+     * @memberof DataChannel
+     */
+    private addMessageFragment(message: TextMessage) {
         if (!this.messageFragments.has(message.I)) {
-            this.messageFragments.set(message.I, { msg: message, receiveBuffer: new Array<any>(message.B) });
-        } else {
-            this.messageFragments.get(message.I).receiveBuffer.push(message.B)
-          
+            const data = { msg: message, receiveBuffer:new ArrayBuffer(0) };
+            data.receiveBuffer = Utils.joinBuffers(data.receiveBuffer, message.B);
+            this.messageFragments.set(message.I, data);
+        } else {         
+            let current = this.messageFragments.get(message.I);
+            current.receiveBuffer = Utils.joinBuffers(current.receiveBuffer,message.B);
         }
-        if(message.F) {
-            let result = this.messageFragments.get(message.I);
+        if (message.F) {
+            let result = this.messageFragments.get(message.I);        
+            result.msg.B = result.receiveBuffer;
             this.dispatchMessage(result.msg);
-
-            let combined = Uint8Array.from(Array.prototype.concat(...result.receiveBuffer.map(a => Array.from(a))));
-            result.msg.B = combined.buffer;
             this.messageFragments.delete(message.I);
         }
-        message.B = new ArrayBuffer(0)
+        message.B = new ArrayBuffer(0) //
     }
 
-    private dispatchMessage(msg:TextMessage){
+    private dispatchMessage(msg: TextMessage) {
         let listener = this.findListener(msg.T);
-        listener && listener.fn.apply(this, [JSON.parse(msg.D),msg.B]);
+        listener && listener.fn.apply(this, [JSON.parse(msg.D), msg.B]);
     }
 
     /**
@@ -107,8 +114,8 @@ export class DataChannel {
     onMessage(event: MessageEvent) {
         const isBinary = typeof (event.data) !== "string";
         if (isBinary) {
-            this.addMessage(BinaryMessage.fromArrayBuffer(event.data));
-        } else {        
+            this.addMessageFragment(BinaryMessage.fromArrayBuffer(event.data));
+        } else {
             this.dispatchMessage(JSON.parse(event.data) as TextMessage)
         }
     }

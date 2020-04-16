@@ -59,7 +59,34 @@ export class Utils {
     static newGuid() {
         const s4 = () => {
             return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-        }        
+        }
         return s4() + s4() + "-" + s4() + "-" + s4() + "-" + s4() + "-" + s4() + s4() + s4();
+    }
+    /**
+     * Create a random string
+     *
+     * @static
+     * @param {number} length
+     * @returns
+     * @memberof Utils
+     */
+    static newRandomString(length:number){
+        return Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, length);
+    }
+
+    /**
+     * Join ArrayBuffers
+     *
+     * @static
+     * @param {ArrayBuffer} a
+     * @param {ArrayBuffer} b
+     * @returns {ArrayBuffer}
+     * @memberof Utils
+     */
+    static joinBuffers(a: ArrayBuffer, b: ArrayBuffer): ArrayBuffer {
+        let newBuffer = new Uint8Array(a.byteLength + b.byteLength);
+        newBuffer.set(new Uint8Array(a), 0);
+        newBuffer.set(new Uint8Array(b), a.byteLength);
+        return newBuffer.buffer;
     }
 }

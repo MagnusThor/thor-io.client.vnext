@@ -35,6 +35,15 @@ var Utils = (function () {
         };
         return s4() + s4() + "-" + s4() + "-" + s4() + "-" + s4() + "-" + s4() + s4() + s4();
     };
+    Utils.newRandomString = function (length) {
+        return Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, length);
+    };
+    Utils.joinBuffers = function (a, b) {
+        var newBuffer = new Uint8Array(a.byteLength + b.byteLength);
+        newBuffer.set(new Uint8Array(a), 0);
+        newBuffer.set(new Uint8Array(b), a.byteLength);
+        return newBuffer.buffer;
+    };
     return Utils;
 }());
 exports.Utils = Utils;

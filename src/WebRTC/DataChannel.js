@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var TextMessage_1 = require("../Messages/TextMessage");
 var DataChannelListner_1 = require("../DataChannels/DataChannelListner");
 var BinaryMessage_1 = require("../Messages/BinaryMessage");
+var Utils_1 = require("../Utils/Utils");
 var DataChannel = (function () {
     function DataChannel(label, listeners) {
         this.Listners = listeners || new Map();
@@ -27,19 +28,20 @@ var DataChannel = (function () {
     };
     DataChannel.prototype.OnOpen = function (event, peerId, name) { };
     DataChannel.prototype.OnClose = function (event, peerId, name) { };
-    DataChannel.prototype.addMessage = function (message) {
-        var _a;
+    DataChannel.prototype.addMessageFragment = function (message) {
         if (!this.messageFragments.has(message.I)) {
-            this.messageFragments.set(message.I, { msg: message, receiveBuffer: new Array(message.B) });
+            var data = { msg: message, receiveBuffer: new ArrayBuffer(0) };
+            data.receiveBuffer = Utils_1.Utils.joinBuffers(data.receiveBuffer, message.B);
+            this.messageFragments.set(message.I, data);
         }
         else {
-            this.messageFragments.get(message.I).receiveBuffer.push(message.B);
+            var current = this.messageFragments.get(message.I);
+            current.receiveBuffer = Utils_1.Utils.joinBuffers(current.receiveBuffer, message.B);
         }
         if (message.F) {
             var result = this.messageFragments.get(message.I);
+            result.msg.B = result.receiveBuffer;
             this.dispatchMessage(result.msg);
-            var combined = Uint8Array.from((_a = Array.prototype).concat.apply(_a, result.receiveBuffer.map(function (a) { return Array.from(a); })));
-            result.msg.B = combined.buffer;
             this.messageFragments.delete(message.I);
         }
         message.B = new ArrayBuffer(0);
@@ -51,7 +53,7 @@ var DataChannel = (function () {
     DataChannel.prototype.onMessage = function (event) {
         var isBinary = typeof (event.data) !== "string";
         if (isBinary) {
-            this.addMessage(BinaryMessage_1.BinaryMessage.fromArrayBuffer(event.data));
+            this.addMessageFragment(BinaryMessage_1.BinaryMessage.fromArrayBuffer(event.data));
         }
         else {
             this.dispatchMessage(JSON.parse(event.data));
