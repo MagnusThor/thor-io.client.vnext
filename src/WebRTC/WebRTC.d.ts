@@ -28,6 +28,7 @@ export declare class WebRTC {
     private onConnected;
     OnDisconnected(peerId: string): void;
     constructor(brokerController: Controller, rtcConfig: any);
+    addTrackToPeers(track: MediaStreamTrack): void;
     setBandwithConstraints(videobandwidth: number, audiobandwidth: number): void;
     private setMediaBitrates;
     private setMediaBitrate;

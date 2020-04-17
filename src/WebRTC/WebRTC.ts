@@ -101,7 +101,7 @@ export class WebRTC {
             let msg = JSON.parse(signal.message);
             switch (msg.type) {
                 case "offer":
-                    this.onOffer(signal);
+                    this.onOffer(signal,signal.skipLocalTracks || false);
                     break;
                 case "answer":
                     this.onAnswer(signal);
@@ -125,6 +125,32 @@ export class WebRTC {
         });
 
     }
+    /**
+     * Add a MediaStreamTrack to remote peers.
+     *
+     * @param {MediaStreamTrack} track
+     * @memberof WebRTC
+     */
+    addTrackToPeers(track:MediaStreamTrack){
+        Array.from((this.Peers.values())).forEach ( (p:WebRTCConnection) => {
+            let pc = p.RTCPeer;
+            pc.onnegotiationneeded = (e) =>{
+                pc.createOffer()
+                .then(offer => pc.setLocalDescription(offer))
+                .then(() => {
+                    let offer = {
+                        sender: this.LocalPeerId,
+                        recipient: p.id,
+                        message: JSON.stringify(pc.localDescription),
+                        skipLocalTracks: true
+                    };
+                    this.brokerController.Invoke("contextSignal", offer)
+                });                
+            };
+            p.RTCPeer.addTrack(track);
+       });
+    }
+
     /**
      * Set video and audio bandwidth constraints.
      *
@@ -203,13 +229,15 @@ export class WebRTC {
             this.addError(err);
         });
     }
-    private onOffer(event:any) {
+    private onOffer(event:any,skipLocalTracks:boolean) {
         let pc = this.getPeerConnection(event.sender);
+        if(!skipLocalTracks){
         this.LocalStreams.forEach((stream: MediaStream) => {
             stream.getTracks().forEach(function (track) {
                 pc.addTrack(track, stream);
             });
         });
+        }
         pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(event.message)));
         pc.createAnswer({ offerToReceiveAudio: true, offerToReceiveVideo: true }).then((description: RTCSessionDescriptionInit) => {
             pc.setLocalDescription(description).then(() => {

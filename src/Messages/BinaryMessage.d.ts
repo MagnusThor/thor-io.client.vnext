@@ -5,5 +5,4 @@ export declare class BinaryMessage {
     private header;
     static fromArrayBuffer(buffer: ArrayBuffer): TextMessage;
     constructor(message: string, arrayBuffer: ArrayBuffer);
-    private joinBuffers;
 }

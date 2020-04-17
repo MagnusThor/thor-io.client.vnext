@@ -17,7 +17,7 @@ var WebRTC = (function () {
             var msg = JSON.parse(signal.message);
             switch (msg.type) {
                 case "offer":
-                    _this.onOffer(signal);
+                    _this.onOffer(signal, signal.skipLocalTracks || false);
                     break;
                 case "answer":
                     _this.onAnswer(signal);
@@ -53,6 +53,26 @@ var WebRTC = (function () {
             this.OnContextDisconnected(this.findPeerConnection(peerId), peerConnection);
         peerConnection.close();
         this.removePeerConnection(peerId);
+    };
+    WebRTC.prototype.addTrackToPeers = function (track) {
+        var _this = this;
+        Array.from((this.Peers.values())).forEach(function (p) {
+            var pc = p.RTCPeer;
+            pc.onnegotiationneeded = function (e) {
+                pc.createOffer()
+                    .then(function (offer) { return pc.setLocalDescription(offer); })
+                    .then(function () {
+                    var offer = {
+                        sender: _this.LocalPeerId,
+                        recipient: p.id,
+                        message: JSON.stringify(pc.localDescription),
+                        skipLocalTracks: true
+                    };
+                    _this.brokerController.Invoke("contextSignal", offer);
+                });
+            };
+            p.RTCPeer.addTrack(track);
+        });
     };
     WebRTC.prototype.setBandwithConstraints = function (videobandwidth, audiobandwidth) {
         this.bandwidthConstraints = new BandwidthConstraints_1.BandwidthConstraints(videobandwidth, audiobandwidth);
@@ -114,14 +134,16 @@ var WebRTC = (function () {
             _this.addError(err);
         });
     };
-    WebRTC.prototype.onOffer = function (event) {
+    WebRTC.prototype.onOffer = function (event, skipLocalTracks) {
         var _this = this;
         var pc = this.getPeerConnection(event.sender);
-        this.LocalStreams.forEach(function (stream) {
-            stream.getTracks().forEach(function (track) {
-                pc.addTrack(track, stream);
+        if (!skipLocalTracks) {
+            this.LocalStreams.forEach(function (stream) {
+                stream.getTracks().forEach(function (track) {
+                    pc.addTrack(track, stream);
+                });
             });
-        });
+        }
         pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(event.message)));
         pc.createAnswer({ offerToReceiveAudio: true, offerToReceiveVideo: true }).then(function (description) {
             pc.setLocalDescription(description).then(function () {

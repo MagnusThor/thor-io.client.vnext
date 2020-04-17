@@ -10,7 +10,7 @@ export declare class DataChannel {
     }, PeerChannel>;
     messageFragments: Map<string, {
         msg: TextMessage;
-        receiveBuffer: Array<any>;
+        receiveBuffer: ArrayBuffer;
     }>;
     constructor(label: string, listeners?: Map<string, DataChannelListner>);
     private findListener;
@@ -18,7 +18,7 @@ export declare class DataChannel {
     Off(topic: string): boolean;
     OnOpen(event: Event, peerId: string, name: string): void;
     OnClose(event: Event, peerId: string, name: string): void;
-    private addMessage;
+    private addMessageFragment;
     private dispatchMessage;
     onMessage(event: MessageEvent): void;
     Close(name?: string): void;
