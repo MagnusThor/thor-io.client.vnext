@@ -22,3 +22,7 @@ var Utils_1 = require("./src/Utils/Utils");
 exports.Utils = Utils_1.Utils;
 var WebRTC_1 = require("./src/WebRTC/WebRTC");
 exports.WebRTC = WebRTC_1.WebRTC;
+var WebRTCConnection_1 = require("./src/WebRTC/WebRTCConnection");
+exports.WebRTCConnection = WebRTCConnection_1.WebRTCConnection;
+var Controller_2 = require("./src/Controller");
+exports.Controller = Controller_2.Controller;

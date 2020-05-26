@@ -56,7 +56,7 @@ var WebRTC = (function () {
     };
     WebRTC.prototype.addTrackToPeers = function (track) {
         var _this = this;
-        Array.from((this.Peers.values())).forEach(function (p) {
+        this.Peers.forEach(function (p) {
             var pc = p.RTCPeer;
             pc.onnegotiationneeded = function (e) {
                 pc.createOffer()
@@ -73,6 +73,24 @@ var WebRTC = (function () {
             };
             p.RTCPeer.addTrack(track);
         });
+    };
+    WebRTC.prototype.removeTrackFromPeers = function (track) {
+        this.Peers.forEach(function (p) {
+            var sender = p.RTCPeer.getSenders().find(function (sender) {
+                return sender.track.id === track.id;
+            });
+            p.RTCPeer.removeTrack(sender);
+        });
+    };
+    WebRTC.prototype.getRtpSenders = function (peerId) {
+        if (!this.Peers.has(peerId))
+            throw "Cannot find the peer";
+        return this.Peers.get(peerId).RTCPeer.getSenders();
+    };
+    WebRTC.prototype.getRtpReceivers = function (peerId) {
+        if (!this.Peers.has(peerId))
+            throw "Cannot find the peer";
+        return this.Peers.get(peerId).RTCPeer.getReceivers();
     };
     WebRTC.prototype.setBandwithConstraints = function (videobandwidth, audiobandwidth) {
         this.bandwidthConstraints = new BandwidthConstraints_1.BandwidthConstraints(videobandwidth, audiobandwidth);

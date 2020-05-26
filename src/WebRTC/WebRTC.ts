@@ -5,7 +5,7 @@ import { DataChannel } from './DataChannel';
 import { BandwidthConstraints } from "./BandwidthConstraints";
 import { Controller } from "../Controller";
 /**
- * 
+ *  WebRTC abstraction layer for thor-io
  *
  * @export
  * @class WebRTC
@@ -86,7 +86,7 @@ export class WebRTC {
         this.removePeerConnection(peerId);
     }
     /**
-     *Creates an instance of WebRTC.
+     * Creates an instance of WebRTC.
      * @param {Controller} brokerController
      * @param {*} rtcConfig
      * @memberof WebRTC
@@ -132,7 +132,7 @@ export class WebRTC {
      * @memberof WebRTC
      */
     addTrackToPeers(track:MediaStreamTrack){
-        Array.from((this.Peers.values())).forEach ( (p:WebRTCConnection) => {
+        this.Peers.forEach ( (p:WebRTCConnection) => {
             let pc = p.RTCPeer;
             pc.onnegotiationneeded = (e) =>{
                 pc.createOffer()
@@ -149,6 +149,43 @@ export class WebRTC {
             };
             p.RTCPeer.addTrack(track);
        });
+    }
+    /**
+     * Remove a MediaStreamTrack from the remote peers
+     *
+     * @param {MediaStreamTrack} track
+     * @memberof WebRTC
+     */
+    removeTrackFromPeers(track:MediaStreamTrack){
+        this.Peers.forEach((p:WebRTCConnection) => {
+            let sender = p.RTCPeer.getSenders().find((sender: RTCRtpSender) => {
+                return sender.track.id === track.id;
+            });
+            p.RTCPeer.removeTrack(sender);
+        });
+    }
+
+    /**
+     * Get the RTCRtpSender's for the specified peer.
+     *
+     * @param {string} peerId
+     * @returns {Array<RTCRtpSender>}
+     * @memberof WebRTC
+     */
+    getRtpSenders(peerId:string):Array<RTCRtpSender>{
+        if(!this.Peers.has(peerId)) throw "Cannot find the peer"
+        return this.Peers.get(peerId).RTCPeer.getSenders();
+    }
+    /**
+     * Get rhe RTCRtpReceiver's for the spcified peer.
+     *
+     * @param {string} peerId
+     * @returns {Array<RTCRtpReceiver>}
+     * @memberof WebRTC
+     */
+    getRtpReceivers(peerId:string):Array<RTCRtpReceiver>{
+        if(!this.Peers.has(peerId)) throw "Cannot find the peer"
+        return this.Peers.get(peerId).RTCPeer.getReceivers();
     }
 
     /**

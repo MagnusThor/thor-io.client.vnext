@@ -9,4 +9,5 @@ export {PropertyMessage} from "./src/Messages/PropertyMessage";
 export {Controller as Proxy} from "./src/Controller";
 export {Utils} from "./src/Utils/Utils";
 export {WebRTC} from "./src/WebRTC/WebRTC";
-
+export {WebRTCConnection} from './src/WebRTC/WebRTCConnection'
+export {Controller} from './src/Controller'
