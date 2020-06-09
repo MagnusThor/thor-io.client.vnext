@@ -108,7 +108,6 @@ export class WebRTC {
     constructor(private brokerController: Controller, private rtcConfig: any, private encrypted?: boolean, cryptoKey?: string) {
 
         if (this.encrypted) {
-
             this.e2ee = new E2EEBase(cryptoKey);
         }
 

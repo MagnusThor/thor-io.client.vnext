@@ -1,16 +1,77 @@
 <html>
 
+<head>
+
+    <title>thor-io.client-vnext E2EE</title>
+
+    <style>
+        #remote {
+
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover;
+            z-index: 900;
+        }
+
+        #local {
+            max-height: 160px;
+            position: absolute;
+            z-index: 1000;
+            right: 1rem;
+            top: 1rem;
+            border: 2px solid #e3e3e3;
+        }
+
+        .brand {
+            position: absolute;
+            z-index: 1000;
+            left: 10px;
+            top: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #ffffff;
+            padding: 10px;
+        }
+
+        #set-encryption {
+            min-height: auto;
+            position: absolute;
+            z-index: 1000;
+            bottom: 1rem;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            width: 50%;
+        }
+
+        #set-encryption input {
+            height: 40px;
+            padding: 5px;
+            font-size: 1.2rem;
+        }
+
+        #set-encryption button {
+            height: 40px;
+            font-size: 1.2rem;
+            padding: 5px;
+        }
+    </style>
+
+</head>
+
 <body>
 
-    <h1></h1>
-     
+    <h1 id="context-name" class="brand"></h1>
     <div>
-        <video id="local" style="max-height: 100px;" autoplay muted></video>
-        <video id="remote" style="max-height: 100px;" autoplay></video>
+        <video id="local" autoplay muted></video>
+        <video id="remote" autoplay poster="https://placehold.it/640x360?text=Wating..."></video>
     </div>
-    <hr>
-    <input type="text" name="e2ee-key">
-    <button>Set key</button>
+    <div id="set-encryption">
+
+        <input type="text" name="e2ee-key">
+        <button>Set key</button>
+    </div>
 
     <script src="build/e2ee-bundle.js"></script>
 </body>
