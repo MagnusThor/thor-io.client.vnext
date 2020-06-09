@@ -78,10 +78,8 @@ export class Main {
                     rtc.addLocalStream(ms);
                     (document.querySelector("video#local") as HTMLVideoElement).srcObject = ms;
 
-
-                    console.log(randomKey);
-
-                    rtc.changeContext(randomKey);
+                   
+                    rtc.changeContext(location.hash.length === 0 ? "foo" : location.hash);
 
 
 
