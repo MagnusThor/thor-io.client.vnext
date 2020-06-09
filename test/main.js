@@ -4,7 +4,7 @@ var __1 = require("..");
 var Main = (function () {
     function Main() {
         var key = __1.Utils.newRandomString(5);
-        var factory = new __1.Factory("ws://localhost:1337", ["broker"]);
+        var factory = new __1.Factory("wss://dev-wss.kollokvium.net/", ["broker"]);
         factory.onOpen = function (broker) {
             broker.onOpen = function () {
                 document.querySelector("input").value = key;

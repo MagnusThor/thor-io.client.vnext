@@ -11,7 +11,7 @@ export class Main {
 
         let key = Utils.newRandomString(5);
 
-        let factory = new Factory("ws://localhost:1337", ["broker"]);
+        let factory = new Factory("wss://dev-wss.kollokvium.net/", ["broker"]);
         factory.onOpen = (broker: Controller) => {
             /**
              *
@@ -47,7 +47,7 @@ export class Main {
                     console.log(`now connected to ${data.context}`)
 
                     document.querySelector("h1").textContent = data.context;
-                    
+
                     rtc.connectContext();
                 };
 
