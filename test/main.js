@@ -51,8 +51,7 @@ var Main = (function () {
                 }).then(function (ms) {
                     rtc.addLocalStream(ms);
                     document.querySelector("video#local").srcObject = ms;
-                    console.log(randomKey);
-                    rtc.changeContext(randomKey);
+                    rtc.changeContext(location.hash.length === 0 ? "foo" : location.hash);
                 });
             };
             broker.connect();
