@@ -18,16 +18,16 @@ var DataChannel = (function () {
         });
         return listener;
     };
-    DataChannel.prototype.On = function (topic, fn) {
+    DataChannel.prototype.on = function (topic, fn) {
         var listener = new DataChannelListner_1.DataChannelListner(this.label, topic, fn);
         this.Listners.set(topic, listener);
         return listener;
     };
-    DataChannel.prototype.Off = function (topic) {
+    DataChannel.prototype.off = function (topic) {
         return this.Listners.delete(topic);
     };
-    DataChannel.prototype.OnOpen = function (event, peerId, name) { };
-    DataChannel.prototype.OnClose = function (event, peerId, name) { };
+    DataChannel.prototype.onOpen = function (event, peerId, name) { };
+    DataChannel.prototype.onClose = function (event, peerId, name) { };
     DataChannel.prototype.addMessageFragment = function (message) {
         if (!this.messageFragments.has(message.I)) {
             var data = { msg: message, receiveBuffer: new ArrayBuffer(0) };
@@ -59,14 +59,14 @@ var DataChannel = (function () {
             this.dispatchMessage(JSON.parse(event.data));
         }
     };
-    DataChannel.prototype.Close = function (name) {
+    DataChannel.prototype.close = function (name) {
         var _this = this;
         this.PeerChannels.forEach(function (pc) {
             if (pc.dataChannel.label === name || _this.label)
                 pc.dataChannel.close();
         });
     };
-    DataChannel.prototype.Invoke = function (topic, data, isFinal, uuid) {
+    DataChannel.prototype.invoke = function (topic, data, isFinal, uuid) {
         var _this = this;
         this.PeerChannels.forEach(function (channel) {
             if (channel.dataChannel.readyState === "open" && channel.label === _this.label) {
@@ -75,13 +75,13 @@ var DataChannel = (function () {
         });
         return this;
     };
-    DataChannel.prototype.InvokeBinary = function (topic, data, arrayBuffer, isFinal, uuid) {
+    DataChannel.prototype.invokeBinary = function (topic, data, arrayBuffer, isFinal, uuid) {
         var _this = this;
         var m = new TextMessage_1.TextMessage(topic, data, this.label, null, uuid, isFinal);
         var message = new BinaryMessage_1.BinaryMessage(m.toString(), arrayBuffer);
         this.PeerChannels.forEach(function (channel) {
             if (channel.dataChannel.readyState === "open" && channel.label === _this.label) {
-                channel.dataChannel.send(message.Buffer);
+                channel.dataChannel.send(message.buffer);
             }
         });
         return this;

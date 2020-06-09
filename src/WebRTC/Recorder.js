@@ -28,19 +28,19 @@ var Recorder = (function () {
     Recorder.prototype.IsTypeSupported = function (type) {
         throw "not yet implemented";
     };
-    Recorder.prototype.GetStats = function () {
+    Recorder.prototype.getStats = function () {
         return {
             videoBitsPerSecond: this.recorder.videoBitsPerSecond,
             audioBitsPerSecond: this.recorder.audioBitsPerSecond
         };
     };
-    Recorder.prototype.Stop = function () {
+    Recorder.prototype.stop = function () {
         this.recorder.stop();
     };
-    Recorder.prototype.Start = function (ms) {
+    Recorder.prototype.start = function (ms) {
         this.blobs = new Array();
         if (this.IsRecording) {
-            this.Stop();
+            this.stop();
             return;
         }
         this.blobs.length = 0;

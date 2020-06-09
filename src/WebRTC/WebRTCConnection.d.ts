@@ -1,6 +1,6 @@
 export declare class WebRTCConnection {
     id: string;
     RTCPeer: RTCPeerConnection;
-    stream: MediaStream;
+    Stream: MediaStream;
     constructor(id: string, rtcPeerConnection: RTCPeerConnection);
 }

@@ -6,10 +6,10 @@ export declare class Factory {
     private controllers;
     IsConnected: boolean;
     constructor(url: string, controllers: Array<string>, params?: any);
-    Close(): void;
-    GetController(alias: string): Controller;
-    RemoveController(alias: string): void;
-    OnOpen(controllers: any): void;
-    OnError(error: any): void;
-    OnClose(event: any): void;
+    close(): void;
+    getController(alias: string): Controller;
+    removeController(alias: string): void;
+    onOpen(controllers: any): void;
+    onError(error: any): void;
+    onClose(event: any): void;
 }

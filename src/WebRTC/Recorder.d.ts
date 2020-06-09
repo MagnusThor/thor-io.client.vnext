@@ -11,7 +11,7 @@ export declare class Recorder {
     OnRecordComplated(blob: any, blobUrl: string): void;
     private handleDataAvailable;
     IsTypeSupported(type: string): void;
-    GetStats(): any;
-    Stop(): void;
-    Start(ms: number): void;
+    getStats(): any;
+    stop(): void;
+    start(ms: number): void;
 }

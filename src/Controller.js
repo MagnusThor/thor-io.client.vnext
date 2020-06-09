@@ -9,48 +9,48 @@ var Controller = (function () {
         this.ws = ws;
         this.listeners = new Map();
         this.IsConnected = false;
-        this.On("___error", function (err) {
-            _this.OnError(err);
+        this.on("___error", function (err) {
+            _this.onError(err);
         });
     }
-    Controller.prototype.OnError = function (event) { };
-    Controller.prototype.OnOpen = function (event) { };
-    Controller.prototype.OnClose = function (event) { };
-    Controller.prototype.Connect = function () {
+    Controller.prototype.onError = function (event) { };
+    Controller.prototype.onOpen = function (event) { };
+    Controller.prototype.onClose = function (event) { };
+    Controller.prototype.connect = function () {
         this.ws.send(new TextMessage_1.TextMessage("___connect", {}, this.alias, null, null, true).toString());
         return this;
     };
     ;
-    Controller.prototype.Close = function () {
+    Controller.prototype.close = function () {
         this.ws.send(new TextMessage_1.TextMessage("___close", {}, this.alias, null, null, true).toString());
         return this;
     };
     ;
-    Controller.prototype.Subscribe = function (topic, callback) {
+    Controller.prototype.subscribe = function (topic, callback) {
         this.ws.send(new TextMessage_1.TextMessage("___subscribe", {
             topic: topic,
             controller: this.alias
         }, this.alias).toString());
-        return this.On(topic, callback);
+        return this.on(topic, callback);
     };
-    Controller.prototype.Unsubscribe = function (topic) {
+    Controller.prototype.unsubscribe = function (topic) {
         this.ws.send(new TextMessage_1.TextMessage("___unsubscribe", {
             topic: topic,
             controller: this.alias
         }, this.alias).toString());
     };
-    Controller.prototype.On = function (topic, fn) {
+    Controller.prototype.on = function (topic, fn) {
         var listener = new Listener_1.Listener(topic, fn);
         this.listeners.set(topic, listener);
         return listener;
     };
-    Controller.prototype.Off = function (topic) {
+    Controller.prototype.of = function (topic) {
         this.listeners.delete(topic);
     };
     Controller.prototype.findListener = function (topic) {
         return this.listeners.get(topic);
     };
-    Controller.prototype.InvokeBinary = function (buffer) {
+    Controller.prototype.invokeBinary = function (buffer) {
         if (buffer instanceof ArrayBuffer) {
             this.ws.send(buffer);
             return this;
@@ -59,7 +59,7 @@ var Controller = (function () {
             throw ("parameter provided must be an ArrayBuffer constructed by Client.BinaryMessage");
         }
     };
-    Controller.prototype.PublishBinary = function (buffer) {
+    Controller.prototype.publishBinary = function (buffer) {
         if (buffer instanceof ArrayBuffer) {
             this.ws.send(buffer);
             return this;
@@ -68,26 +68,26 @@ var Controller = (function () {
             throw ("parameter provided must be an ArrayBuffer constructed by Client.BinaryMessage");
         }
     };
-    Controller.prototype.Invoke = function (method, data, controller) {
+    Controller.prototype.invoke = function (method, data, controller) {
         this.ws.send(new TextMessage_1.TextMessage(method, data, controller || this.alias, null, null, true).toString());
         return this;
     };
-    Controller.prototype.Publish = function (topic, data, controller) {
-        this.Invoke(topic, data, controller || this.alias);
+    Controller.prototype.publish = function (topic, data, controller) {
+        this.invoke(topic, data, controller || this.alias);
         return this;
     };
-    Controller.prototype.SetProperty = function (propName, propValue, controller) {
-        this.Invoke(propName, propValue, controller || this.alias);
+    Controller.prototype.setProperty = function (propName, propValue, controller) {
+        this.invoke(propName, propValue, controller || this.alias);
         return this;
     };
-    Controller.prototype.Dispatch = function (topic, data, buffer) {
+    Controller.prototype.dispatch = function (topic, data, buffer) {
         if (topic === "___open") {
             this.IsConnected = true;
-            this.OnOpen(JSON.parse(data));
+            this.onOpen(JSON.parse(data));
             return;
         }
         else if (topic === "___close") {
-            this.OnClose([JSON.parse(data)]);
+            this.onClose([JSON.parse(data)]);
             this.IsConnected = false;
         }
         else {

@@ -3,10 +3,6 @@ import { PeerChannel } from "./PeerChannel";
 import { DataChannelListner } from "../DataChannels/DataChannelListner";
 import { BinaryMessage } from '../Messages/BinaryMessage';
 import { Utils } from '../Utils/Utils';
-
-
-
-
 /**
  * Create a new DataChannel for the WebRTCPeerConnection
  *
@@ -17,13 +13,9 @@ export class DataChannel {
     Listners: Map<string, DataChannelListner>;
     public label: string;
     public PeerChannels: Map<{ id: string, name: string }, PeerChannel>;
-
-
-
     messageFragments: Map<string, {
         msg: TextMessage, receiveBuffer: ArrayBuffer
     }>;
-
     constructor(label: string, listeners?: Map<string, DataChannelListner>) {
         this.Listners = listeners || new Map<string, DataChannelListner>();
         this.PeerChannels = new Map<{ id: string, name: string }, PeerChannel>();
@@ -45,7 +37,7 @@ export class DataChannel {
      * @returns {DataChannelListner}
      * @memberof DataChannel
      */
-    On<T>(topic: string, fn: (message: T, arrayBuffer: ArrayBuffer) => void): DataChannelListner {
+    on<T>(topic: string, fn: (message: T, arrayBuffer: ArrayBuffer) => void): DataChannelListner {
         var listener = new DataChannelListner(this.label, topic, fn);
         this.Listners.set(topic, listener);
         return listener;
@@ -56,7 +48,7 @@ export class DataChannel {
      * @param {string} topic
      * @memberof DataChannel
      */
-    Off(topic: string): boolean {
+    off(topic: string): boolean {
         return this.Listners.delete(topic)
     }
     /**
@@ -66,7 +58,7 @@ export class DataChannel {
      * @param {string} peerId
      * @memberof DataChannel
      */
-    OnOpen(event: Event, peerId: string, name: string) { }
+    onOpen(event: Event, peerId: string, name: string) { }
     /**
      * Fires when the DataChannel is closed or lost
      *
@@ -74,7 +66,7 @@ export class DataChannel {
      * @param {string} peerId
      * @memberof DataChannel
      */
-    OnClose(event: Event, peerId: string, name: string) { }
+    onClose(event: Event, peerId: string, name: string) { }
     /**
      * Add a message fragment ( continuous messages )
      *
@@ -124,7 +116,7 @@ export class DataChannel {
      *
      * @memberof DataChannel
      */
-    Close(name?: string) {
+    close(name?: string) {
         this.PeerChannels.forEach((pc: PeerChannel) => {
             if (pc.dataChannel.label === name || this.label)
                 pc.dataChannel.close();
@@ -138,7 +130,7 @@ export class DataChannel {
      * @returns {DataChannel}
      * @memberof DataChannel
      */
-    Invoke(topic: string, data: any, isFinal?: boolean, uuid?: string): DataChannel {
+    invoke(topic: string, data: any, isFinal?: boolean, uuid?: string): DataChannel {
         this.PeerChannels.forEach((channel: PeerChannel) => {
             if (channel.dataChannel.readyState === "open" && channel.label === this.label) {
                 channel.dataChannel.send(new TextMessage(topic, data, channel.label, null, uuid, isFinal).toString());
@@ -147,27 +139,18 @@ export class DataChannel {
         return this;
     }
 
-    InvokeBinary(topic: string, data: any, arrayBuffer: ArrayBuffer, isFinal: boolean, uuid?: string): DataChannel {
-
+    invokeBinary(topic: string, data: any, arrayBuffer: ArrayBuffer, isFinal: boolean, uuid?: string): DataChannel {
         let m = new TextMessage(topic, data, this.label, null, uuid, isFinal);
-
-
         const message = new BinaryMessage(m.toString(),
             arrayBuffer
         );
-
         this.PeerChannels.forEach((channel: PeerChannel) => {
             if (channel.dataChannel.readyState === "open" && channel.label === this.label) {
-                channel.dataChannel.send(message.Buffer);
+                channel.dataChannel.send(message.buffer);
             }
         });
-
-
-
         return this;
-
     }
-
     /**
      *  Add a PeerChannel
      *
@@ -177,8 +160,7 @@ export class DataChannel {
     addPeerChannel(pc: PeerChannel) {
         this.PeerChannels.set({
             id: pc.peerId, name: pc.label
-        }
-            , pc);
+        },pc);
     }
     /**
      *  Remove a PeerChannel

@@ -7,7 +7,7 @@ import { TextMessage } from "./TextMessage";
  * @class BinaryMessage
  */
 export class BinaryMessage {
-    Buffer: ArrayBuffer;
+    buffer: ArrayBuffer;
     private header: Uint8Array;    /**
      * Convert a BinnayMessage to TextMessage ( extract embedeed TextMessage)
      *
@@ -36,7 +36,7 @@ export class BinaryMessage {
      */
     constructor(message: string, public arrayBuffer: ArrayBuffer) {
         this.header = new Uint8Array(Utils.longToArray(message.length));
-        this.Buffer = Utils.joinBuffers(Utils.joinBuffers(this.header.buffer, Utils.stingToBuffer(message).buffer), arrayBuffer);
+        this.buffer = Utils.joinBuffers(Utils.joinBuffers(this.header.buffer, Utils.stingToBuffer(message).buffer), arrayBuffer);
     }
  
 }

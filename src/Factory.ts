@@ -32,23 +32,23 @@ export class Factory {
         this.ws.onmessage = event => {
             if (typeof (event.data) !== "object") {
                 let message = JSON.parse(event.data);
-                this.GetController(message.C).Dispatch(message.T, message.D);
+                this.getController(message.C).dispatch(message.T, message.D);
             }
             else {
                 let message = BinaryMessage.fromArrayBuffer(event.data);
-                this.GetController(message.C).Dispatch(message.T, message.D, message.B);
+                this.getController(message.C).dispatch(message.T, message.D, message.B);
             }
         };
         this.ws.onclose = event => {
             this.IsConnected = false;
-            this.OnClose.apply(this, [event]);
+            this.onClose.apply(this, [event]);
         };
         this.ws.onerror = error => {
-            this.OnError.apply(this, [error]);
+            this.onError.apply(this, [error]);
         };
         this.ws.onopen = event => {
             this.IsConnected = true;
-            this.OnOpen.apply(this, Array.from(this.controllers.values()));
+            this.onOpen.apply(this, Array.from(this.controllers.values()));
         };
     }
     /**
@@ -56,7 +56,7 @@ export class Factory {
      *
      * @memberof Factory
      */
-    Close() {
+    close() {
         this.ws.close();
     }
     /**
@@ -66,7 +66,7 @@ export class Factory {
      * @returns {Controller}
      * @memberof Factory
      */
-    GetController(alias: string): Controller {
+    getController(alias: string): Controller {
         return this.controllers.get(alias);        
     }    
     /**
@@ -75,7 +75,7 @@ export class Factory {
      * @param {string} alias
      * @memberof Factory
      */
-    RemoveController(alias: string) {
+    removeController(alias: string) {
         this.controllers.delete(alias);       
     }
     /**
@@ -84,19 +84,19 @@ export class Factory {
      * @param {*} proxys
      * @memberof Factory
      */
-    OnOpen(controllers: any) { }
+    onOpen(controllers: any) { }
     /**
      *  Fires when a connection goes wrong
      *
      * @param {*} error
      * @memberof Factory
      */
-    OnError(error: any) { }
+    onError(error: any) { }
      /**
      *  Fires when a connection is closed by the thor-io.vnext server
      *
      * @param {*} error
      * @memberof Factory
      */
-    OnClose(event: any) { }
+    onClose(event: any) { }
 }

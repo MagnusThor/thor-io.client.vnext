@@ -32,19 +32,19 @@ export class Recorder {
     IsTypeSupported(type: string) {
         throw "not yet implemented";
     }
-    GetStats(): any {
+    getStats(): any {
         return {
             videoBitsPerSecond: this.recorder.videoBitsPerSecond,
             audioBitsPerSecond: this.recorder.audioBitsPerSecond
         };
     }
-    Stop() {
+    stop() {
         this.recorder.stop();
     }
-    Start(ms: number) {
+    start(ms: number) {
         this.blobs = new Array<any>();
         if (this.IsRecording) {
-            this.Stop();
+            this.stop();
             return;
         }
         this.blobs.length = 0;

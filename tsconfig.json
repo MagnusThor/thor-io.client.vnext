@@ -1,17 +1,20 @@
 {
   "compilerOptions": {
-  "target": "es5",
-  "lib": ["ES2015","DOM"],
-  "module": "commonjs",
-  "moduleResolution": "node",
-  "sourceMap": false,
-  "emitDecoratorMetadata": true,
-  "experimentalDecorators": true,
-  "esModuleInterop": true,
-  "removeComments": true,
-  "noImplicitAny": true
+    "target": "es5",
+    "lib": [
+      "ES2015",
+      "DOM"
+    ],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "sourceMap": false,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "esModuleInterop": true,
+    "removeComments": true,
+    "noImplicitAny": true
   },
   "exclude": [
-  "node_modules"
+    "node_modules"
   ]
 }

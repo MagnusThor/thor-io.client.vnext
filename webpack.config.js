@@ -3,7 +3,7 @@ module.exports = {
     mode:"development", 
     watch: false,
     entry: {
-      dc: './test/testChannel.js'
+      e2ee: './test/main.js'
     },
     
     output: {

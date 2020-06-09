@@ -6,7 +6,7 @@ var BinaryMessage = (function () {
     function BinaryMessage(message, arrayBuffer) {
         this.arrayBuffer = arrayBuffer;
         this.header = new Uint8Array(Utils_1.Utils.longToArray(message.length));
-        this.Buffer = Utils_1.Utils.joinBuffers(Utils_1.Utils.joinBuffers(this.header.buffer, Utils_1.Utils.stingToBuffer(message).buffer), arrayBuffer);
+        this.buffer = Utils_1.Utils.joinBuffers(Utils_1.Utils.joinBuffers(this.header.buffer, Utils_1.Utils.stingToBuffer(message).buffer), arrayBuffer);
     }
     BinaryMessage.fromArrayBuffer = function (buffer) {
         var bytes = new Uint8Array(buffer);

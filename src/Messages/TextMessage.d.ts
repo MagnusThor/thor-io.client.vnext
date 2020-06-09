@@ -5,7 +5,7 @@ export declare class TextMessage {
     C: string;
     I: string;
     F: boolean;
-    readonly JSON: any;
+    get JSON(): any;
     constructor(topic: string, object: any, controller: string, buffer?: ArrayBuffer | Uint8Array, uuid?: string, isFinal?: boolean);
     toString(): string;
     static fromArrayBuffer(buffer: ArrayBuffer): TextMessage;

@@ -15,41 +15,41 @@ var Factory = (function () {
         this.ws.onmessage = function (event) {
             if (typeof (event.data) !== "object") {
                 var message = JSON.parse(event.data);
-                _this.GetController(message.C).Dispatch(message.T, message.D);
+                _this.getController(message.C).dispatch(message.T, message.D);
             }
             else {
                 var message = BinaryMessage_1.BinaryMessage.fromArrayBuffer(event.data);
-                _this.GetController(message.C).Dispatch(message.T, message.D, message.B);
+                _this.getController(message.C).dispatch(message.T, message.D, message.B);
             }
         };
         this.ws.onclose = function (event) {
             _this.IsConnected = false;
-            _this.OnClose.apply(_this, [event]);
+            _this.onClose.apply(_this, [event]);
         };
         this.ws.onerror = function (error) {
-            _this.OnError.apply(_this, [error]);
+            _this.onError.apply(_this, [error]);
         };
         this.ws.onopen = function (event) {
             _this.IsConnected = true;
-            _this.OnOpen.apply(_this, Array.from(_this.controllers.values()));
+            _this.onOpen.apply(_this, Array.from(_this.controllers.values()));
         };
     }
     Factory.prototype.toQuery = function (obj) {
         return "?" + Object.keys(obj).map(function (key) { return (encodeURIComponent(key) + "=" +
             encodeURIComponent(obj[key])); }).join("&");
     };
-    Factory.prototype.Close = function () {
+    Factory.prototype.close = function () {
         this.ws.close();
     };
-    Factory.prototype.GetController = function (alias) {
+    Factory.prototype.getController = function (alias) {
         return this.controllers.get(alias);
     };
-    Factory.prototype.RemoveController = function (alias) {
+    Factory.prototype.removeController = function (alias) {
         this.controllers.delete(alias);
     };
-    Factory.prototype.OnOpen = function (controllers) { };
-    Factory.prototype.OnError = function (error) { };
-    Factory.prototype.OnClose = function (event) { };
+    Factory.prototype.onOpen = function (controllers) { };
+    Factory.prototype.onError = function (error) { };
+    Factory.prototype.onClose = function (event) { };
     return Factory;
 }());
 exports.Factory = Factory;

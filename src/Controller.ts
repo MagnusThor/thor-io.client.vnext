@@ -12,8 +12,8 @@ export class Controller {
     constructor(public alias: string, private ws: WebSocket) {
         this.listeners = new Map<string,Listener>();
         this.IsConnected = false;
-        this.On("___error", (err: any) => {
-            this.OnError(err);
+        this.on("___error", (err: any) => {
+            this.onError(err);
         });
     }
     /** 
@@ -22,28 +22,28 @@ export class Controller {
      * @param {*} event
      * @memberof Controller
      */
-    OnError(event: any) { }
+    onError(event: any) { }
     /**
      * Fires when sucessfully created a connection to the thor-io.vnext sever controller
      *
      * @param {*} event
      * @memberof Controller
      */
-    OnOpen(event: any) { }
+    onOpen(event: any) { }
     /**
      *Fires when the controller's connection closed.
      *
      * @param {*} event
      * @memberof Controller
      */
-    OnClose(event: any) { }
+    onClose(event: any) { }
     /**
      * Connect the controller (create an new instance of the thor-io.vnext server controller)
      *
      * @returns
      * @memberof Controller
      */
-    Connect() {
+    connect() {
         this.ws.send(new TextMessage("___connect", {}, this.alias,null,null,true).toString());
         return this;
     }
@@ -54,7 +54,7 @@ export class Controller {
      * @returns
      * @memberof Controller
      */
-    Close() {
+    close() {
         this.ws.send(new TextMessage("___close", {}, this.alias,null,null,true).toString());
         return this;
     }
@@ -67,12 +67,12 @@ export class Controller {
      * @returns {Listener}
      * @memberof Controller
      */
-    Subscribe(topic: string, callback: any): Listener {
+    subscribe(topic: string, callback: any): Listener {
         this.ws.send(new TextMessage("___subscribe", {
             topic: topic,
             controller: this.alias
         }, this.alias).toString());
-        return this.On(topic, callback);
+        return this.on(topic, callback);
     }
     /**
      * Remove a subscription
@@ -80,7 +80,7 @@ export class Controller {
      * @param {string} topic
      * @memberof Controller
      */
-    Unsubscribe(topic: string) {
+    unsubscribe(topic: string) {
         this.ws.send(new TextMessage("___unsubscribe", {
             topic: topic,
             controller: this.alias
@@ -94,7 +94,7 @@ export class Controller {
      * @returns {Listener}
      * @memberof Controller
      */
-    On(topic: string, fn: any): Listener {
+    on(topic: string, fn: any): Listener {
         let listener = new Listener(topic, fn);
         this.listeners.set(topic,listener);
         return listener;
@@ -105,7 +105,7 @@ export class Controller {
      * @param {string} topic
      * @memberof Controller
      */
-    Off(topic: string) {
+    of(topic: string) {
         this.listeners.delete(topic);
     }
     private findListener(topic: string): Listener {
@@ -119,7 +119,7 @@ export class Controller {
      * @returns {Controller}
      * @memberof Controller
      */
-    InvokeBinary(buffer: ArrayBuffer): Controller {
+    invokeBinary(buffer: ArrayBuffer): Controller {
         if (buffer instanceof ArrayBuffer) {
             this.ws.send(buffer);
             return this;
@@ -135,7 +135,7 @@ export class Controller {
      * @returns {Controller}
      * @memberof Controller
      */
-    PublishBinary(buffer: ArrayBuffer): Controller {
+    publishBinary(buffer: ArrayBuffer): Controller {
         if (buffer instanceof ArrayBuffer) {
             this.ws.send(buffer);
             return this;
@@ -153,7 +153,7 @@ export class Controller {
      * @returns {Controller}
      * @memberof Controller
      */
-    Invoke(method: string, data: any, controller?: string): Controller {
+    invoke(method: string, data: any, controller?: string): Controller {
         this.ws.send(new TextMessage(method, data, controller || this.alias,null,null,true).toString());
         return this;
     }    
@@ -166,8 +166,8 @@ export class Controller {
      * @returns {Controller}
      * @memberof Controller
      */
-    Publish(topic: string, data: any, controller?: string): Controller {
-        this.Invoke(topic,data,controller || this.alias);
+    publish(topic: string, data: any, controller?: string): Controller {
+        this.invoke(topic,data,controller || this.alias);
          return this;
     }
     /**
@@ -179,8 +179,8 @@ export class Controller {
      * @returns {Controller}
      * @memberof Controller
      */
-    SetProperty(propName: string, propValue: any, controller?: string): Controller {
-        this.Invoke(propName, propValue, controller || this.alias);
+    setProperty(propName: string, propValue: any, controller?: string): Controller {
+        this.invoke(propName, propValue, controller || this.alias);
         return this;
     }  
      /**
@@ -192,14 +192,14 @@ export class Controller {
       * @returns
       * @memberof Controller
       */
-     Dispatch(topic: string, data: any, buffer?: ArrayBuffer | Uint8Array) {
+     dispatch(topic: string, data: any, buffer?: ArrayBuffer | Uint8Array) {
         if (topic === "___open") {
             this.IsConnected = true;
-            this.OnOpen(JSON.parse(data));
+            this.onOpen(JSON.parse(data));
             return;
         }
         else if (topic === "___close") {
-            this.OnClose([JSON.parse(data)]);
+            this.onClose([JSON.parse(data)]);
             this.IsConnected = false;
         }
         else {
@@ -209,3 +209,5 @@ export class Controller {
         }
     }
 }
+
+
