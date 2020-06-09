@@ -11,7 +11,17 @@ var Main = (function () {
                 document.querySelector("button").addEventListener("click", function () {
                     rtc.e2ee.setKey(document.querySelector("input").value);
                 });
-                var rtc = new __1.WebRTC(broker, {}, true, key);
+                var rtc = new __1.WebRTC(broker, {
+                    "sdpSemantics": "plan-b",
+                    "iceTransports": "all",
+                    "rtcpMuxPolicy": "require",
+                    "bundlePolicy": "max-bundle",
+                    "iceServers": [
+                        {
+                            "urls": "stun:stun.l.google.com:19302"
+                        }
+                    ]
+                }, true, key);
                 rtc.onContextConnected = function (w, r) {
                     console.log("connected to ", w.id);
                 };

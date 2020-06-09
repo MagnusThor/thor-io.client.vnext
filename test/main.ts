@@ -27,8 +27,18 @@ export class Main {
                 });
 
 
-                let rtc = new WebRTC(broker, {
-                }, true, key);
+                let rtc = new WebRTC(broker,  {
+                    "sdpSemantics": "plan-b",
+                    "iceTransports": "all",
+                    "rtcpMuxPolicy": "require",
+                    "bundlePolicy": "max-bundle",
+                    "iceServers": [
+                        {
+                            "urls": "stun:stun.l.google.com:19302"
+                        }
+                    ]
+                }
+                , true, key);
 
 
 
