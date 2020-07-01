@@ -28,7 +28,8 @@ export class WebRTC {
     public errors: Array<any>;
     public bandwidthConstraints: BandwidthConstraints;
     public e2ee: IE2EE;
-
+    public isEncrypted: boolean;
+    
 
     /**
      * Fires when an error occurs
@@ -105,10 +106,13 @@ export class WebRTC {
      * @param {string} [cryptoKey]
      * @memberof WebRTC
      */
-    constructor(private brokerController: Controller, private rtcConfig: any, private encrypted?: boolean, cryptoKey?: string) {
+    constructor(private brokerController: Controller, private rtcConfig: any,e2ee?:IE2EE) {
 
-        if (this.encrypted) {
-            this.e2ee = new E2EEBase(cryptoKey);
+        if (e2ee) {
+            this.isEncrypted = true
+            this.e2ee = e2ee;
+        }else{
+            this.isEncrypted = false;
         }
 
         this.errors = new Array<any>();
@@ -293,7 +297,7 @@ export class WebRTC {
             this.localStreams.forEach((stream: MediaStream) => {
                 stream.getTracks().forEach((track) => {
                     let rtpSender = pc.addTrack(track, stream);
-                    if (this.encrypted) {
+                    if (this.isEncrypted) {
                         let streams = (rtpSender as any).createEncodedStreams();
                         streams.readableStream
                             .pipeThrough(new TransformStream({
@@ -350,7 +354,7 @@ export class WebRTC {
 
         let config: any
 
-        if (this.encrypted) {
+        if (this.isEncrypted) {
             config = this.rtcConfig;
             config.encodedInsertableStreams = true;
             config.forceEncodedVideoInsertableStreams = true;
@@ -454,20 +458,15 @@ export class WebRTC {
         let peerConnection = this.createPeerConnection(peer.peerId);
         this.localStreams.forEach((stream) => {
             stream.getTracks().forEach((track: MediaStreamTrack) => {
-                let rtpSender = peerConnection.addTrack(track, stream);
-
-                if (this.encrypted) {
+                const rtpSender = peerConnection.addTrack(track, stream);
+                if (this.isEncrypted) {
                     let senderStreams = (rtpSender as any).createEncodedStreams();
-                    console.log("createOffer -> senderStreams", senderStreams);
-
                     senderStreams.readableStream
                         .pipeThrough(new TransformStream({
                             transform: this.e2ee.encode.bind(this.e2ee),
                         }))
                         .pipeTo(senderStreams.writableStream);
                 }
-
-
             });
             if (this.onLocalStream)
                 this.onLocalStream(stream);

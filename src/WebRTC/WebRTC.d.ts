@@ -3,6 +3,7 @@ import { WebRTCConnection } from "./WebRTCConnection";
 import { DataChannel } from './DataChannel';
 import { BandwidthConstraints } from "./BandwidthConstraints";
 import { Controller } from "../Controller";
+import { IE2EE } from '../E2EE/EncodeDecode';
 export declare class WebRTC {
     private brokerController;
     private rtcConfig;
@@ -14,20 +15,22 @@ export declare class WebRTC {
     localStreams: Array<any>;
     errors: Array<any>;
     bandwidthConstraints: BandwidthConstraints;
+    e2ee: IE2EE;
+    isEncrypted: boolean;
     onError: (err: any) => void;
     onContextCreated: (peerConnection: PeerConnection) => void;
     onContextChanged: (context: {
         context: string;
         peerId: string;
     }) => void;
-    onRemoteTrack: (track: MediaStreamTrack, connection: WebRTCConnection) => void;
+    onRemoteTrack: (track: MediaStreamTrack, connection: WebRTCConnection, event: RTCTrackEvent) => void;
     onLocalStream: (stream: MediaStream) => void;
-    OnContextConnected: (webRTCConnection: WebRTCConnection, rtcPeerConnection: RTCPeerConnection) => void;
+    onContextConnected: (webRTCConnection: WebRTCConnection, rtcPeerConnection: RTCPeerConnection) => void;
     onContextDisconnected: (webRTCConnection: WebRTCConnection, rtcPeerConnection: RTCPeerConnection) => void;
     private onConnectTo;
     private onConnected;
     onDisconnected(peerId: string): void;
-    constructor(brokerController: Controller, rtcConfig: any);
+    constructor(brokerController: Controller, rtcConfig: any, e2ee?: IE2EE);
     addTrackToPeers(track: MediaStreamTrack): void;
     removeTrackFromPeers(track: MediaStreamTrack): void;
     getRtpSenders(peerId: string): Array<RTCRtpSender>;

@@ -4,15 +4,17 @@ var WebRTCConnection_1 = require("./WebRTCConnection");
 var PeerChannel_1 = require("./PeerChannel");
 var DataChannel_1 = require("./DataChannel");
 var BandwidthConstraints_1 = require("./BandwidthConstraints");
-var EncodeDecode_1 = require("../E2EE/EncodeDecode");
 var WebRTC = (function () {
-    function WebRTC(brokerController, rtcConfig, encrypted, cryptoKey) {
+    function WebRTC(brokerController, rtcConfig, e2ee) {
         var _this = this;
         this.brokerController = brokerController;
         this.rtcConfig = rtcConfig;
-        this.encrypted = encrypted;
-        if (this.encrypted) {
-            this.e2ee = new EncodeDecode_1.E2EEBase(cryptoKey);
+        if (e2ee) {
+            this.isEncrypted = true;
+            this.e2ee = e2ee;
+        }
+        else {
+            this.isEncrypted = false;
         }
         this.errors = new Array();
         this.localStreams = new Array();
@@ -164,7 +166,7 @@ var WebRTC = (function () {
             this.localStreams.forEach(function (stream) {
                 stream.getTracks().forEach(function (track) {
                     var rtpSender = pc.addTrack(track, stream);
-                    if (_this.encrypted) {
+                    if (_this.isEncrypted) {
                         var streams = rtpSender.createEncodedStreams();
                         streams.readableStream
                             .pipeThrough(new TransformStream({
@@ -203,7 +205,7 @@ var WebRTC = (function () {
     WebRTC.prototype.createPeerConnection = function (id) {
         var _this = this;
         var config;
-        if (this.encrypted) {
+        if (this.isEncrypted) {
             config = this.rtcConfig;
             config.encodedInsertableStreams = true;
             config.forceEncodedVideoInsertableStreams = true;
@@ -291,9 +293,8 @@ var WebRTC = (function () {
         this.localStreams.forEach(function (stream) {
             stream.getTracks().forEach(function (track) {
                 var rtpSender = peerConnection.addTrack(track, stream);
-                if (_this.encrypted) {
+                if (_this.isEncrypted) {
                     var senderStreams = rtpSender.createEncodedStreams();
-                    console.log("createOffer -> senderStreams", senderStreams);
                     senderStreams.readableStream
                         .pipeThrough(new TransformStream({
                         transform: _this.e2ee.encode.bind(_this.e2ee),
