@@ -4,7 +4,6 @@ var WebRTCConnection = (function () {
     function WebRTCConnection(id, rtcPeerConnection) {
         this.id = id;
         this.RTCPeer = rtcPeerConnection;
-        this.Stream = new MediaStream();
     }
     return WebRTCConnection;
 }());

@@ -6,11 +6,6 @@ import { BandwidthConstraints } from "./BandwidthConstraints";
 import { Controller } from "../Controller";
 import { E2EEBase, IE2EE } from '../E2EE/EncodeDecode';
 
-
-
-
-
-
 /**
  *  WebRTC abstraction layer for thor-io
  *
@@ -52,11 +47,29 @@ export class WebRTC {
     onContextChanged: (context: { context: string, peerId: string }) => void;
 
     /**
-     * When a remote Peer adds an MediaTrack 1-n
+     * Fires when a remote audio track is lost
+     *
+     * @memberof WebRTC
+     */
+    onRemoteAudioTrack: (track: MediaStreamTrack, connection: WebRTCConnection, event: RTCTrackEvent) => void;
+    /**
+     *  Fires when a remote video track is added
+     *
+     * @memberof WebRTC
+     */
+    onRemoteVideoTrack: (track: MediaStreamTrack, connection: WebRTCConnection, event: RTCTrackEvent) => void;
+    /**
+     * FIres when a remote video or audio track is added
      *
      * @memberof WebRTC
      */
     onRemoteTrack: (track: MediaStreamTrack, connection: WebRTCConnection, event: RTCTrackEvent) => void;
+    /**
+     * Fires when a remote track is lost
+     *
+     * @memberof WebRTC
+     */
+    onRemoteTrackLost: (track: MediaStreamTrack, connection: WebRTCConnection, event: MediaStreamTrackEvent) => void
     /**
      * Fires when local MediaStream is added
      *
@@ -70,7 +83,7 @@ export class WebRTC {
      */
     onContextConnected: (webRTCConnection: WebRTCConnection, rtcPeerConnection: RTCPeerConnection) => void;
     /**
-     * Fires when a WebRTCConnectioni is closed or lost.
+     * Fires when a WebRTCConnection is closed or lost.
      *
      * @memberof WebRTC
      */
@@ -385,7 +398,6 @@ export class WebRTC {
         rtcPeerConnection.oniceconnectionstatechange = (event: any) => {
             switch (event.target.iceConnectionState) {
                 case "connected":
-
                     this.onConnected(id);
                     break;
                 case "disconnected":
@@ -395,11 +407,18 @@ export class WebRTC {
             }
         };
         rtcPeerConnection.ontrack = (event: RTCTrackEvent) => {
-            let connection = this.peers.get(id);
-            connection.Stream.addTrack(event.track);
-            if (this.onRemoteTrack)
-                this.onRemoteTrack(event.track, connection, event);
+            const track = event.track;
+            const kind = event.track.kind;            
+            const connection = this.peers.get(id);
+            event.track.onended = (e:MediaStreamTrackEvent) =>{
+                    if (this.onRemoteTrackLost) this.onRemoteTrackLost(track,connection,e);                    
+            }
+            if(kind === "video" && this.onRemoteVideoTrack) {
+                this.onRemoteVideoTrack(track, connection, event)
+            }else kind === "video" && this.onRemoteAudioTrack(track,connection,event);
+            if(this.onRemoteTrack) this.onRemoteTrack(track,connection,event)
         };
+
         this.dataChannels.forEach((dataChannel: DataChannel) => {
             let pc = new PeerChannel(id, rtcPeerConnection.createDataChannel(dataChannel.label), dataChannel.label);
             dataChannel.addPeerChannel(pc);

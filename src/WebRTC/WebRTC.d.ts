@@ -23,7 +23,10 @@ export declare class WebRTC {
         context: string;
         peerId: string;
     }) => void;
+    onRemoteAudioTrack: (track: MediaStreamTrack, connection: WebRTCConnection, event: RTCTrackEvent) => void;
+    onRemoteVideoTrack: (track: MediaStreamTrack, connection: WebRTCConnection, event: RTCTrackEvent) => void;
     onRemoteTrack: (track: MediaStreamTrack, connection: WebRTCConnection, event: RTCTrackEvent) => void;
+    onRemoteTrackLost: (track: MediaStreamTrack, connection: WebRTCConnection, event: MediaStreamTrackEvent) => void;
     onLocalStream: (stream: MediaStream) => void;
     onContextConnected: (webRTCConnection: WebRTCConnection, rtcPeerConnection: RTCPeerConnection) => void;
     onContextDisconnected: (webRTCConnection: WebRTCConnection, rtcPeerConnection: RTCPeerConnection) => void;

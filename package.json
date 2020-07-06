@@ -1,6 +1,6 @@
 {
   "name": "thor-io.client-vnext",
-  "version": "2.1.0-beta.1",
+  "version": "2.1.0-beta.2",
   "license": "MIT",
   "dependencies": {
     "@types/webrtc": "0.0.26"

@@ -1,6 +1,6 @@
 
 module.exports = {
-    mode:"production", 
+    mode:"development", 
     watch: false,
     entry: {
       e2ee: './test/main.js'
