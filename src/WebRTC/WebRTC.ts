@@ -24,7 +24,7 @@ export class WebRTC {
     public bandwidthConstraints: BandwidthConstraints;
     public e2ee: IE2EE;
     public isEncrypted: boolean;
-    
+
 
     /**
      * Fires when an error occurs
@@ -88,7 +88,7 @@ export class WebRTC {
      * @memberof WebRTC
      */
     onContextDisconnected: (webRTCConnection: WebRTCConnection, rtcPeerConnection: RTCPeerConnection) => void;
-    
+
     private onConnectTo(peerConnections: Array<PeerConnection>) {
         this.connect(peerConnections);
     }
@@ -110,7 +110,7 @@ export class WebRTC {
         peerConnection.close();
         this.removePeerConnection(peerId);
     }
-   
+
     /**
      *Creates an instance of WebRTC.
      * @param {Controller} brokerController
@@ -119,12 +119,12 @@ export class WebRTC {
      * @param {string} [cryptoKey]
      * @memberof WebRTC
      */
-    constructor(private brokerController: Controller, private rtcConfig: any,e2ee?:IE2EE) {
+    constructor(private brokerController: Controller, private rtcConfig: any, e2ee?: IE2EE) {
 
         if (e2ee) {
             this.isEncrypted = true
             this.e2ee = e2ee;
-        }else{
+        } else {
             this.isEncrypted = false;
         }
 
@@ -408,15 +408,16 @@ export class WebRTC {
         };
         rtcPeerConnection.ontrack = (event: RTCTrackEvent) => {
             const track = event.track;
-            const kind = event.track.kind;            
+            const kind = event.track.kind;
             const connection = this.peers.get(id);
-            event.track.onended = (e:MediaStreamTrackEvent) =>{
-                    if (this.onRemoteTrackLost) this.onRemoteTrackLost(track,connection,e);                    
+            event.track.onended = (e: MediaStreamTrackEvent) => {
+                if (this.onRemoteTrackLost) this.onRemoteTrackLost(track, connection, e);
             }
-            if(kind === "video" && this.onRemoteVideoTrack) {
+            if (kind === "video" && this.onRemoteVideoTrack) {
                 this.onRemoteVideoTrack(track, connection, event)
-            }else kind === "video" && this.onRemoteAudioTrack(track,connection,event);
-            if(this.onRemoteTrack) this.onRemoteTrack(track,connection,event)
+            } else if (kind === "audio" && this.onRemoteAudioTrack) {
+                if (this.onRemoteTrack) this.onRemoteTrack(track, connection, event)
+            }
         };
 
         this.dataChannels.forEach((dataChannel: DataChannel) => {

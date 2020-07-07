@@ -3,11 +3,11 @@ module.exports = {
     mode:"development", 
     watch: false,
     entry: {
-      e2ee: './test/main.js'
+      e2ee: './dev/main.js'
     },
     
     output: {
-      path: __dirname + '/test/build',
+      path: __dirname + '/dev/build',
       filename: '[name]-bundle.js'
     },
     plugins: [

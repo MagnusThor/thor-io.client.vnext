@@ -253,10 +253,10 @@ var WebRTC = (function () {
             if (kind === "video" && _this.onRemoteVideoTrack) {
                 _this.onRemoteVideoTrack(track, connection, event);
             }
-            else
-                kind === "video" && _this.onRemoteAudioTrack(track, connection, event);
-            if (_this.onRemoteTrack)
-                _this.onRemoteTrack(track, connection, event);
+            else if (kind === "audio" && _this.onRemoteAudioTrack) {
+                if (_this.onRemoteTrack)
+                    _this.onRemoteTrack(track, connection, event);
+            }
         };
         this.dataChannels.forEach(function (dataChannel) {
             var pc = new PeerChannel_1.PeerChannel(id, rtcPeerConnection.createDataChannel(dataChannel.label), dataChannel.label);
