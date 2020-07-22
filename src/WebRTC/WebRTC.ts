@@ -416,8 +416,9 @@ export class WebRTC {
             if (kind === "video" && this.onRemoteVideoTrack) {
                 this.onRemoteVideoTrack(track, connection, event)
             } else if (kind === "audio" && this.onRemoteAudioTrack) {
-                if (this.onRemoteTrack) this.onRemoteTrack(track, connection, event)
+                this.onRemoteAudioTrack(track, connection, event)
             }
+            if (this.onRemoteTrack) this.onRemoteTrack(track, connection, event)
         };
 
         this.dataChannels.forEach((dataChannel: DataChannel) => {
