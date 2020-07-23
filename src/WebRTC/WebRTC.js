@@ -1,13 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var WebRTCConnection_1 = require("./WebRTCConnection");
-var PeerChannel_1 = require("./PeerChannel");
-var DataChannel_1 = require("./DataChannel");
-var BandwidthConstraints_1 = require("./BandwidthConstraints");
-var WebRTC = (function () {
-    function WebRTC(brokerController, rtcConfig, e2ee) {
-        var _this = this;
-        this.brokerController = brokerController;
+const PeerChannel_1 = require("./PeerChannel");
+const DataChannel_1 = require("./DataChannel");
+const BandwidthConstraints_1 = require("./BandwidthConstraints");
+const ThorIOConnection_1 = require("./ThorIOConnection");
+class WebRTC {
+    constructor(signalingController, rtcConfig, e2ee) {
+        this.signalingController = signalingController;
         this.rtcConfig = rtcConfig;
         if (e2ee) {
             this.isEncrypted = true;
@@ -16,99 +15,97 @@ var WebRTC = (function () {
         else {
             this.isEncrypted = false;
         }
-        this.errors = new Array();
         this.localStreams = new Array();
         this.dataChannels = new Map();
         this.peers = new Map();
-        this.brokerController.on("contextSignal", function (signal) {
-            var msg = JSON.parse(signal.message);
+        this.signalingController.on("contextSignal", (signal) => {
+            let msg = JSON.parse(signal.message);
             switch (msg.type) {
                 case "offer":
-                    _this.onOffer(signal, signal.skipLocalTracks || false);
+                    this.onOffer(signal, signal.skipLocalTracks || false);
                     break;
                 case "answer":
-                    _this.onAnswer(signal);
+                    this.onAnswer(signal);
                     break;
                 case "candidate":
-                    _this.onCandidate(signal);
+                    this.onCandidate(signal);
                     break;
             }
         });
-        brokerController.on("contextCreated", function (peer) {
-            _this.localPeerId = peer.peerId;
-            _this.context = peer.context;
-            _this.onContextCreated(peer);
+        this.signalingController.on("contextCreated", (peer) => {
+            this.localPeerId = peer.peerId;
+            this.context = peer.context;
+            this.onContextCreated(peer);
         });
-        brokerController.on("contextChanged", function (context) {
-            _this.context = context;
-            _this.onContextChanged(context);
+        this.signalingController.on("contextChanged", (context) => {
+            this.context = context;
+            this.onContextChanged(context);
         });
-        brokerController.on("connectTo", function (peers) {
-            _this.onConnectTo(peers);
+        this.signalingController.on("connectTo", (peers) => {
+            this.onConnectAll(peers);
         });
     }
-    WebRTC.prototype.onConnectTo = function (peerConnections) {
+    onConnectAll(peerConnections) {
         this.connect(peerConnections);
-    };
-    WebRTC.prototype.onConnected = function (peerId) {
+    }
+    onConnected(peerId) {
         if (this.onContextConnected)
-            this.onContextConnected(this.findPeerConnection(peerId), this.getPeerConnection(peerId));
-    };
-    WebRTC.prototype.onDisconnected = function (peerId) {
-        var peerConnection = this.getPeerConnection(peerId);
+            this.onContextConnected(this.findPeerConnection(peerId), this.getOrCreateRTCPeerConnection(peerId));
+    }
+    onDisconnected(peerId) {
+        let peerConnection = this.getOrCreateRTCPeerConnection(peerId);
         if (this.onContextDisconnected)
             this.onContextDisconnected(this.findPeerConnection(peerId), peerConnection);
         peerConnection.close();
         this.removePeerConnection(peerId);
-    };
-    WebRTC.prototype.addTrackToPeers = function (track) {
-        var _this = this;
-        this.peers.forEach(function (p) {
-            var pc = p.RTCPeer;
-            pc.onnegotiationneeded = function (e) {
+    }
+    addTrackToPeers(track) {
+        this.peers.forEach((p) => {
+            let pc = p.peerConnection;
+            pc.onnegotiationneeded = (e) => {
                 pc.createOffer()
-                    .then(function (offer) { return pc.setLocalDescription(offer); })
-                    .then(function () {
-                    var offer = {
-                        sender: _this.localPeerId,
+                    .then(offer => pc.setLocalDescription(offer))
+                    .then(() => {
+                    let offer = {
+                        sender: this.localPeerId,
                         recipient: p.id,
                         message: JSON.stringify(pc.localDescription),
                         skipLocalTracks: true
                     };
-                    _this.brokerController.invoke("contextSignal", offer);
+                    this.signalingController.invoke("contextSignal", offer);
                 });
             };
-            p.RTCPeer.addTrack(track);
+            p.peerConnection.addTrack(track);
         });
-    };
-    WebRTC.prototype.removeTrackFromPeers = function (track) {
-        this.peers.forEach(function (p) {
-            var sender = p.RTCPeer.getSenders().find(function (sender) {
+    }
+    removeTrackFromPeers(track) {
+        this.peers.forEach((p) => {
+            let sender = p.getSenders().find((sender) => {
                 return sender.track.id === track.id;
             });
-            p.RTCPeer.removeTrack(sender);
+            p.peerConnection.removeTrack(sender);
         });
-    };
-    WebRTC.prototype.getRtpSenders = function (peerId) {
+    }
+    getRtpSenders(peerId) {
         if (!this.peers.has(peerId))
             throw "Cannot find the peer";
-        return this.peers.get(peerId).RTCPeer.getSenders();
-    };
-    WebRTC.prototype.getRtpReceivers = function (peerId) {
+        return this.peers.get(peerId).getSenders();
+    }
+    getRtpReceivers(peerId) {
         if (!this.peers.has(peerId))
             throw "Cannot find the peer";
-        return this.peers.get(peerId).RTCPeer.getReceivers();
-    };
-    WebRTC.prototype.setBandwithConstraints = function (videobandwidth, audiobandwidth) {
+        return this.peers.get(peerId).getReceivers();
+    }
+    setBandwithConstraints(videobandwidth, audiobandwidth) {
         this.bandwidthConstraints = new BandwidthConstraints_1.BandwidthConstraints(videobandwidth, audiobandwidth);
-    };
-    WebRTC.prototype.setMediaBitrates = function (sdp) {
+    }
+    setMediaBitrates(sdp) {
         return this.setMediaBitrate(this.setMediaBitrate(sdp, "video", this.bandwidthConstraints.videobandwidth), "audio", this.bandwidthConstraints.audiobandwidth);
-    };
-    WebRTC.prototype.setMediaBitrate = function (sdp, media, bitrate) {
-        var lines = sdp.split("\n");
-        var line = -1;
-        for (var i = 0; i < lines.length; i++) {
+    }
+    setMediaBitrate(sdp, media, bitrate) {
+        let lines = sdp.split("\n");
+        let line = -1;
+        for (let i = 0; i < lines.length; i++) {
             if (lines[i].indexOf("m=" + media) === 0) {
                 line = i;
                 break;
@@ -129,48 +126,45 @@ var WebRTC = (function () {
         newLines.push("b=AS:" + bitrate);
         newLines = newLines.concat(lines.slice(line, lines.length));
         return newLines.join("\n");
-    };
-    WebRTC.prototype.createDataChannel = function (name) {
-        var channel = new DataChannel_1.DataChannel(name);
+    }
+    createDataChannel(name) {
+        let channel = new DataChannel_1.DataChannel(name);
         this.dataChannels.set(name, channel);
         return channel;
-    };
-    WebRTC.prototype.removeDataChannel = function (name) {
+    }
+    removeDataChannel(name) {
         this.dataChannels.delete(name);
-    };
-    WebRTC.prototype.addError = function (err) {
+    }
+    addError(err) {
         this.onError(err);
-    };
-    WebRTC.prototype.onCandidate = function (event) {
-        var _this = this;
-        var msg = JSON.parse(event.message);
-        var candidate = msg.iceCandidate;
-        var pc = this.getPeerConnection(event.sender);
-        pc.addIceCandidate(new RTCIceCandidate(candidate)).then(function () {
-        }).catch(function (err) {
-            _this.addError(err);
+    }
+    onCandidate(event) {
+        let msg = JSON.parse(event.message);
+        let candidate = msg.iceCandidate;
+        let pc = this.getOrCreateRTCPeerConnection(event.sender);
+        pc.addIceCandidate(new RTCIceCandidate(candidate)).then(() => {
+        }).catch((err) => {
+            this.addError(err);
         });
-    };
-    WebRTC.prototype.onAnswer = function (event) {
-        var _this = this;
-        var pc = this.getPeerConnection(event.sender);
-        pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(event.message))).then(function (p) {
-        }).catch(function (err) {
-            _this.addError(err);
+    }
+    onAnswer(event) {
+        let pc = this.getOrCreateRTCPeerConnection(event.sender);
+        pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(event.message))).then((p) => {
+        }).catch((err) => {
+            this.addError(err);
         });
-    };
-    WebRTC.prototype.onOffer = function (event, skipLocalTracks) {
-        var _this = this;
-        var pc = this.getPeerConnection(event.sender);
+    }
+    onOffer(event, skipLocalTracks) {
+        let pc = this.getOrCreateRTCPeerConnection(event.sender);
         if (!skipLocalTracks) {
-            this.localStreams.forEach(function (stream) {
-                stream.getTracks().forEach(function (track) {
-                    var rtpSender = pc.addTrack(track, stream);
-                    if (_this.isEncrypted) {
-                        var streams = rtpSender.createEncodedStreams();
+            this.localStreams.forEach((stream) => {
+                stream.getTracks().forEach((track) => {
+                    let rtpSender = pc.addTrack(track, stream);
+                    if (this.isEncrypted) {
+                        let streams = rtpSender.createEncodedStreams();
                         streams.readableStream
                             .pipeThrough(new TransformStream({
-                            transform: _this.e2ee.encode.bind(_this.e2ee),
+                            transform: this.e2ee.encode.bind(this.e2ee),
                         }))
                             .pipeTo(streams.writableStream);
                     }
@@ -178,33 +172,32 @@ var WebRTC = (function () {
             });
         }
         pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(event.message)));
-        pc.createAnswer({ offerToReceiveAudio: true, offerToReceiveVideo: true }).then(function (description) {
-            pc.setLocalDescription(description).then(function () {
-                if (_this.bandwidthConstraints)
-                    description.sdp = _this.setMediaBitrates(description.sdp);
-                var answer = {
-                    sender: _this.localPeerId,
+        pc.createAnswer({ offerToReceiveAudio: true, offerToReceiveVideo: true }).then((description) => {
+            pc.setLocalDescription(description).then(() => {
+                if (this.bandwidthConstraints)
+                    description.sdp = this.setMediaBitrates(description.sdp);
+                let answer = {
+                    sender: this.localPeerId,
                     recipient: event.sender,
                     message: JSON.stringify(description)
                 };
-                _this.brokerController.invoke("contextSignal", answer);
-            }).catch(function (err) { return _this.addError(err); });
-        }).catch(function (err) { return _this.addError(err); });
-    };
-    WebRTC.prototype.addLocalStream = function (stream) {
+                this.signalingController.invoke("contextSignal", answer);
+            }).catch((err) => this.addError(err));
+        }).catch((err) => this.addError(err));
+    }
+    addLocalStream(stream) {
         this.localStreams.push(stream);
         return this;
-    };
-    WebRTC.prototype.addIceServer = function (iceServer) {
+    }
+    addIceServer(iceServer) {
         this.rtcConfig.iceServers.push(iceServer);
         return this;
-    };
-    WebRTC.prototype.removePeerConnection = function (id) {
+    }
+    removePeerConnection(id) {
         this.peers.delete(id);
-    };
-    WebRTC.prototype.createPeerConnection = function (id) {
-        var _this = this;
-        var config;
+    }
+    createRTCPeerConnection(id) {
+        let config;
         if (this.isEncrypted) {
             config = this.rtcConfig;
             config.encodedInsertableStreams = true;
@@ -214,154 +207,154 @@ var WebRTC = (function () {
         else {
             config = this.rtcConfig;
         }
-        var rtcPeerConnection = new RTCPeerConnection(config);
-        rtcPeerConnection.onsignalingstatechange = function (state) { };
-        rtcPeerConnection.onicecandidate = function (event) {
+        let rtcPeerConnection = new RTCPeerConnection(config);
+        rtcPeerConnection.onsignalingstatechange = (state) => { };
+        rtcPeerConnection.onicecandidate = (event) => {
             if (!event || !event.candidate)
                 return;
             if (event.candidate) {
-                var msg = {
-                    sender: _this.localPeerId,
+                let msg = {
+                    sender: this.localPeerId,
                     recipient: id,
                     message: JSON.stringify({
                         type: 'candidate',
                         iceCandidate: event.candidate
                     })
                 };
-                _this.brokerController.invoke("contextSignal", msg);
+                this.signalingController.invoke("contextSignal", msg);
             }
         };
-        rtcPeerConnection.oniceconnectionstatechange = function (event) {
+        rtcPeerConnection.oniceconnectionstatechange = (event) => {
             switch (event.target.iceConnectionState) {
                 case "connected":
-                    _this.onConnected(id);
+                    this.onConnected(id);
                     break;
                 case "disconnected":
-                    _this.cleanUp(id);
-                    _this.onDisconnected(id);
+                    this.cleanUp(id);
+                    this.onDisconnected(id);
                     break;
             }
         };
-        rtcPeerConnection.ontrack = function (event) {
-            var track = event.track;
-            var kind = event.track.kind;
-            var connection = _this.peers.get(id);
-            event.track.onended = function (e) {
-                if (_this.onRemoteTrackLost)
-                    _this.onRemoteTrackLost(track, connection, e);
+        rtcPeerConnection.ontrack = (event) => {
+            const track = event.track;
+            const kind = event.track.kind;
+            const connection = this.peers.get(id);
+            event.track.onended = (e) => {
+                if (this.onRemoteTrackLost)
+                    this.onRemoteTrackLost(track, connection, e);
             };
-            if (kind === "video" && _this.onRemoteVideoTrack) {
-                _this.onRemoteVideoTrack(track, connection, event);
+            if (kind === "video" && this.onRemoteVideoTrack) {
+                this.onRemoteVideoTrack(track, connection, event);
             }
-            else if (kind === "audio" && _this.onRemoteAudioTrack) {
-                _this.onRemoteAudioTrack(track, connection, event);
+            else if (kind === "audio" && this.onRemoteAudioTrack) {
+                this.onRemoteAudioTrack(track, connection, event);
             }
-            if (_this.onRemoteTrack)
-                _this.onRemoteTrack(track, connection, event);
+            if (this.onRemoteTrack)
+                this.onRemoteTrack(track, connection, event);
         };
-        this.dataChannels.forEach(function (dataChannel) {
-            var pc = new PeerChannel_1.PeerChannel(id, rtcPeerConnection.createDataChannel(dataChannel.label), dataChannel.label);
+        this.dataChannels.forEach((dataChannel) => {
+            let pc = new PeerChannel_1.PeerChannel(id, rtcPeerConnection.createDataChannel(dataChannel.label), dataChannel.label);
             dataChannel.addPeerChannel(pc);
-            rtcPeerConnection.ondatachannel = function (event) {
-                var channel = event.channel;
-                channel.onopen = function (event) {
-                    _this.dataChannels.get(channel.label).onOpen(event, id, channel.label);
+            rtcPeerConnection.ondatachannel = (event) => {
+                let channel = event.channel;
+                channel.onopen = (event) => {
+                    this.dataChannels.get(channel.label).onOpen(event, id, channel.label);
                 };
-                channel.onclose = function (event) {
-                    _this.dataChannels.get(channel.label).removePeerChannel(id);
-                    _this.dataChannels.get(channel.label).onClose(event, id, channel.label);
+                channel.onclose = (event) => {
+                    this.dataChannels.get(channel.label).removePeerChannel(id);
+                    this.dataChannels.get(channel.label).onClose(event, id, channel.label);
                 };
-                channel.onmessage = function (message) {
-                    _this.dataChannels.get(channel.label).onMessage(message);
+                channel.onmessage = (message) => {
+                    this.dataChannels.get(channel.label).onMessage(message);
                 };
             };
         });
         return rtcPeerConnection;
-    };
-    WebRTC.prototype.cleanUp = function (id) {
-        this.dataChannels.forEach(function (d) {
+    }
+    cleanUp(id) {
+        this.dataChannels.forEach((d) => {
             d.removePeerChannel(id);
         });
-    };
-    WebRTC.prototype.findPeerConnection = function (id) {
+    }
+    findPeerConnection(id) {
         return this.peers.get(id);
-    };
-    WebRTC.prototype.reconnectAll = function () {
+    }
+    reconnectAll() {
         throw "not yet implemeted";
-    };
-    WebRTC.prototype.getPeerConnection = function (id) {
-        var match = this.peers.get(id);
+    }
+    getOrCreateRTCPeerConnection(id) {
+        let match = this.peers.get(id);
         if (!match) {
-            var pc = new WebRTCConnection_1.WebRTCConnection(id, this.createPeerConnection(id));
+            let pc = new ThorIOConnection_1.ThorIOConnection(id, this.createRTCPeerConnection(id));
             this.peers.set(id, pc);
-            return pc.RTCPeer;
+            return pc.peerConnection;
         }
-        return match.RTCPeer;
-    };
-    WebRTC.prototype.createOffer = function (peer) {
-        var _this = this;
-        var peerConnection = this.createPeerConnection(peer.peerId);
-        this.localStreams.forEach(function (stream) {
-            stream.getTracks().forEach(function (track) {
-                var rtpSender = peerConnection.addTrack(track, stream);
-                if (_this.isEncrypted) {
-                    var senderStreams = rtpSender.createEncodedStreams();
+        return match.peerConnection;
+    }
+    createOffer(peer) {
+        let peerConnection = this.createRTCPeerConnection(peer.peerId);
+        this.localStreams.forEach((stream) => {
+            stream.getTracks().forEach((track) => {
+                const rtpSender = peerConnection.addTrack(track, stream);
+                if (this.isEncrypted) {
+                    let senderStreams = rtpSender.createEncodedStreams();
                     senderStreams.readableStream
                         .pipeThrough(new TransformStream({
-                        transform: _this.e2ee.encode.bind(_this.e2ee),
+                        transform: this.e2ee.encode.bind(this.e2ee),
                     }))
                         .pipeTo(senderStreams.writableStream);
                 }
             });
-            if (_this.onLocalStream)
-                _this.onLocalStream(stream);
+            if (this.onLocalStream)
+                this.onLocalStream(stream);
         });
-        peerConnection.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true }).then(function (description) {
-            peerConnection.setLocalDescription(description).then(function () {
-                if (_this.bandwidthConstraints)
-                    description.sdp = _this.setMediaBitrates(description.sdp);
-                var offer = {
-                    sender: _this.localPeerId,
+        peerConnection.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true }).then((description) => {
+            peerConnection.setLocalDescription(description).then(() => {
+                if (this.bandwidthConstraints)
+                    description.sdp = this.setMediaBitrates(description.sdp);
+                let offer = {
+                    sender: this.localPeerId,
                     recipient: peer.peerId,
                     message: JSON.stringify(description)
                 };
-                _this.brokerController.invoke("contextSignal", offer);
-            }).catch(function (err) {
-                _this.addError(err);
+                this.signalingController.invoke("contextSignal", offer);
+            }).catch((err) => {
+                this.addError(err);
             });
-        }).catch(function (err) {
-            _this.addError(err);
+        }).catch((err) => {
+            this.addError(err);
         });
         return peerConnection;
-    };
-    WebRTC.prototype.disconnect = function () {
-        this.peers.forEach(function (connection) {
-            connection.RTCPeer.close();
+    }
+    disconnect() {
+        this.peers.forEach((connection) => {
+            connection.peerConnection.close();
         });
         this.changeContext(Math.random().toString(36).substring(2));
-    };
-    WebRTC.prototype.disconnectPeer = function (id) {
-        var peer = this.findPeerConnection(id);
-        peer.RTCPeer.close();
-    };
-    WebRTC.prototype.connect = function (peerConnections) {
-        var _this = this;
-        peerConnections.forEach(function (peerConnection) {
-            var pc = new WebRTCConnection_1.WebRTCConnection(peerConnection.peerId, _this.createOffer(peerConnection));
-            _this.peers.set(peerConnection.peerId, pc);
+    }
+    disconnectPeer(id) {
+        let peer = this.findPeerConnection(id);
+        peer.peerConnection.close();
+    }
+    connect(peerConnections) {
+        peerConnections.forEach((peerConnection) => {
+            this.connectTo(peerConnection);
         });
+    }
+    connectTo(peerConnection) {
+        let pc = new ThorIOConnection_1.ThorIOConnection(peerConnection.peerId, this.createOffer(peerConnection));
+        if (!this.peers.has(peerConnection.peerId))
+            this.peers.set(peerConnection.peerId, pc);
+    }
+    changeContext(context) {
+        this.signalingController.invoke("changeContext", { context: context });
         return this;
-    };
-    WebRTC.prototype.changeContext = function (context) {
-        this.brokerController.invoke("changeContext", { context: context });
-        return this;
-    };
-    WebRTC.prototype.connectPeers = function () {
-        this.brokerController.invoke("connectContext", {});
-    };
-    WebRTC.prototype.connectContext = function () {
+    }
+    connectPeers() {
+        this.signalingController.invoke("connectContext", {});
+    }
+    connectContext() {
         this.connectPeers();
-    };
-    return WebRTC;
-}());
+    }
+}
 exports.WebRTC = WebRTC;

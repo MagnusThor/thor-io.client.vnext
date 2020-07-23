@@ -2,7 +2,7 @@ import { Listener } from "./Listener";
 export declare class Controller {
     alias: string;
     private ws;
-    IsConnected: boolean;
+    isConnected: boolean;
     private listeners;
     constructor(alias: string, ws: WebSocket);
     onError(event: any): void;

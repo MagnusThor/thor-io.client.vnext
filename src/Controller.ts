@@ -7,11 +7,11 @@ import { Listener } from "./Listener";
  * @class Controller
  */
 export class Controller {
-    IsConnected: boolean;
+    isConnected: boolean;
     private listeners: Map<string,Listener>;
     constructor(public alias: string, private ws: WebSocket) {
         this.listeners = new Map<string,Listener>();
-        this.IsConnected = false;
+        this.isConnected = false;
         this.on("___error", (err: any) => {
             this.onError(err);
         });
@@ -113,7 +113,7 @@ export class Controller {
         return this.listeners.get(topic);
     }   
     /**
-     * Send and ArrayBuffer
+     * Send an ArrayBuffer
      *
      * @param {ArrayBuffer} buffer
      * @returns {Controller}
@@ -125,7 +125,7 @@ export class Controller {
             return this;
         }
         else {
-            throw ("parameter provided must be an ArrayBuffer constructed by Client.BinaryMessage");
+            throw ("parameter provided must be an ArrayBuffer constructed by BinaryMessage");
         }
     }
     /**
@@ -145,7 +145,7 @@ export class Controller {
         }
     }
     /**
-     * Call a method (rpc) on the contorller
+     * Call a method (rpc) on the controller
      *
      * @param {string} method
      * @param {*} data
@@ -184,7 +184,7 @@ export class Controller {
         return this;
     }  
      /**
-      * Dispatch an even (message) to the listeners
+      * Dispatch an event (message) to the listeners
       *
       * @param {string} topic
       * @param {*} data
@@ -194,13 +194,13 @@ export class Controller {
       */
      dispatch(topic: string, data: any, buffer?: ArrayBuffer | Uint8Array) {
         if (topic === "___open") {
-            this.IsConnected = true;
+            this.isConnected = true;
             this.onOpen(JSON.parse(data));
             return;
         }
         else if (topic === "___close") {
             this.onClose([JSON.parse(data)]);
-            this.IsConnected = false;
+            this.isConnected = false;
         }
         else {
             let listener = this.findListener(topic);

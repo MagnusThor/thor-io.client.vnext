@@ -1,99 +1,94 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var TextMessage_1 = require("../Messages/TextMessage");
-var DataChannelListner_1 = require("../DataChannels/DataChannelListner");
-var BinaryMessage_1 = require("../Messages/BinaryMessage");
-var Utils_1 = require("../Utils/Utils");
-var DataChannel = (function () {
-    function DataChannel(label, listeners) {
+const TextMessage_1 = require("../Messages/TextMessage");
+const DataChannelListner_1 = require("../DataChannels/DataChannelListner");
+const BinaryMessage_1 = require("../Messages/BinaryMessage");
+const Utils_1 = require("../Utils/Utils");
+class DataChannel {
+    constructor(label, listeners) {
         this.Listners = listeners || new Map();
         this.PeerChannels = new Map();
         this.label = label;
         this.messageFragments = new Map();
     }
-    DataChannel.prototype.findListener = function (topic) {
-        var _this = this;
-        var listener = Array.from(this.Listners.values()).find(function (pre) {
-            return pre.channelName === _this.label && pre.topic === topic;
+    findListener(topic) {
+        let listener = Array.from(this.Listners.values()).find((pre) => {
+            return pre.channelName === this.label && pre.topic === topic;
         });
         return listener;
-    };
-    DataChannel.prototype.on = function (topic, fn) {
+    }
+    on(topic, fn) {
         var listener = new DataChannelListner_1.DataChannelListner(this.label, topic, fn);
         this.Listners.set(topic, listener);
         return listener;
-    };
-    DataChannel.prototype.off = function (topic) {
+    }
+    off(topic) {
         return this.Listners.delete(topic);
-    };
-    DataChannel.prototype.onOpen = function (event, peerId, name) { };
-    DataChannel.prototype.onClose = function (event, peerId, name) { };
-    DataChannel.prototype.addMessageFragment = function (message) {
+    }
+    onOpen(event, peerId, name) { }
+    onClose(event, peerId, name) { }
+    addMessageFragment(message) {
         if (!this.messageFragments.has(message.I)) {
-            var data = { msg: message, receiveBuffer: new ArrayBuffer(0) };
+            const data = { msg: message, receiveBuffer: new ArrayBuffer(0) };
             data.receiveBuffer = Utils_1.Utils.joinBuffers(data.receiveBuffer, message.B);
             this.messageFragments.set(message.I, data);
         }
         else {
-            var current = this.messageFragments.get(message.I);
+            let current = this.messageFragments.get(message.I);
             current.receiveBuffer = Utils_1.Utils.joinBuffers(current.receiveBuffer, message.B);
         }
         if (message.F) {
-            var result = this.messageFragments.get(message.I);
+            let result = this.messageFragments.get(message.I);
             result.msg.B = result.receiveBuffer;
             this.dispatchMessage(result.msg);
             this.messageFragments.delete(message.I);
         }
         message.B = new ArrayBuffer(0);
-    };
-    DataChannel.prototype.dispatchMessage = function (msg) {
-        var listener = this.findListener(msg.T);
+    }
+    dispatchMessage(msg) {
+        let listener = this.findListener(msg.T);
         listener && listener.fn.apply(this, [JSON.parse(msg.D), msg.B]);
-    };
-    DataChannel.prototype.onMessage = function (event) {
-        var isBinary = typeof (event.data) !== "string";
+    }
+    onMessage(event) {
+        const isBinary = typeof (event.data) !== "string";
         if (isBinary) {
             this.addMessageFragment(BinaryMessage_1.BinaryMessage.fromArrayBuffer(event.data));
         }
         else {
             this.dispatchMessage(JSON.parse(event.data));
         }
-    };
-    DataChannel.prototype.close = function (name) {
-        var _this = this;
-        this.PeerChannels.forEach(function (pc) {
-            if (pc.dataChannel.label === name || _this.label)
+    }
+    close(name) {
+        this.PeerChannels.forEach((pc) => {
+            if (pc.dataChannel.label === name || this.label)
                 pc.dataChannel.close();
         });
-    };
-    DataChannel.prototype.invoke = function (topic, data, isFinal, uuid) {
-        var _this = this;
-        this.PeerChannels.forEach(function (channel) {
-            if (channel.dataChannel.readyState === "open" && channel.label === _this.label) {
+    }
+    invoke(topic, data, isFinal, uuid) {
+        this.PeerChannels.forEach((channel) => {
+            if (channel.dataChannel.readyState === "open" && channel.label === this.label) {
                 channel.dataChannel.send(new TextMessage_1.TextMessage(topic, data, channel.label, null, uuid, isFinal).toString());
             }
         });
         return this;
-    };
-    DataChannel.prototype.invokeBinary = function (topic, data, arrayBuffer, isFinal, uuid) {
-        var _this = this;
-        var m = new TextMessage_1.TextMessage(topic, data, this.label, null, uuid, isFinal);
-        var message = new BinaryMessage_1.BinaryMessage(m.toString(), arrayBuffer);
-        this.PeerChannels.forEach(function (channel) {
-            if (channel.dataChannel.readyState === "open" && channel.label === _this.label) {
+    }
+    invokeBinary(topic, data, arrayBuffer, isFinal, uuid) {
+        let m = new TextMessage_1.TextMessage(topic, data, this.label, null, uuid, isFinal);
+        const message = new BinaryMessage_1.BinaryMessage(m.toString(), arrayBuffer);
+        this.PeerChannels.forEach((channel) => {
+            if (channel.dataChannel.readyState === "open" && channel.label === this.label) {
                 channel.dataChannel.send(message.buffer);
             }
         });
         return this;
-    };
-    DataChannel.prototype.addPeerChannel = function (pc) {
+    }
+    addPeerChannel(pc) {
         this.PeerChannels.set({
             id: pc.peerId, name: pc.label
         }, pc);
-    };
-    DataChannel.prototype.removePeerChannel = function (id) {
+    }
+    removePeerChannel(id) {
         return this.PeerChannels.delete({ id: id, name: this.label });
-    };
-    return DataChannel;
-}());
+    }
+}
 exports.DataChannel = DataChannel;

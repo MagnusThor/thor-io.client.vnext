@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "ES2016",
     "lib": [
-      "ES2015",
-      "DOM"
+      "DOM",
+      "ES2016"
     ],
     "module": "commonjs",
     "moduleResolution": "node",
@@ -12,7 +12,10 @@
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "removeComments": true,
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "rootDirs": [
+      "src"
+    ]
   },
   "exclude": [
     "node_modules"

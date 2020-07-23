@@ -1,75 +1,68 @@
-import { PeerConnection } from "./PeerConnection";
-import { WebRTCConnection } from "./WebRTCConnection";
+import { ContextConnection } from './ContextConnection';
 import { PeerChannel } from "./PeerChannel";
 import { DataChannel } from './DataChannel';
 import { BandwidthConstraints } from "./BandwidthConstraints";
 import { Controller } from "../Controller";
-import { E2EEBase, IE2EE } from '../E2EE/EncodeDecode';
-
+import { IE2EE } from '../E2EE/E2EEBase';
+import { ThorIOConnection } from './ThorIOConnection';
 /**
- *  WebRTC abstraction layer for thor-io
+ *  WebRTC abstraction layer for thor-io.vnext
  *
  * @export
  * @class WebRTC
  */
 export class WebRTC {
-
-    public peers: Map<string, WebRTCConnection>;
+    public peers: Map<string, ThorIOConnection>;
     public peer: RTCPeerConnection;
     public dataChannels: Map<string, DataChannel>;
     public localPeerId: string;
-    public context: any;
+    public context: string;
     public localStreams: Array<any>;
-    public errors: Array<any>;
     public bandwidthConstraints: BandwidthConstraints;
     public e2ee: IE2EE;
     public isEncrypted: boolean;
-
-
     /**
      * Fires when an error occurs
      *
      * @memberof WebRTC
      */
     onError: (err: any) => void;
-
     /**
      * Fires when client connects to broker
      *
      * @memberof WebRTC
      */
-    onContextCreated: (peerConnection: PeerConnection) => void;
+    onContextCreated: (peerConnection: ContextConnection) => void;
     /**
      * Fires when client changes context ,and server confirms
      *
      * @memberof WebRTC
      */
     onContextChanged: (context: { context: string, peerId: string }) => void;
-
     /**
      * Fires when a remote audio track is lost
      *
      * @memberof WebRTC
      */
-    onRemoteAudioTrack: (track: MediaStreamTrack, connection: WebRTCConnection, event: RTCTrackEvent) => void;
+    onRemoteAudioTrack: (track: MediaStreamTrack, connection: ThorIOConnection, event: RTCTrackEvent) => void;
     /**
      *  Fires when a remote video track is added
      *
      * @memberof WebRTC
      */
-    onRemoteVideoTrack: (track: MediaStreamTrack, connection: WebRTCConnection, event: RTCTrackEvent) => void;
+    onRemoteVideoTrack: (track: MediaStreamTrack, connection: ThorIOConnection, event: RTCTrackEvent) => void;
     /**
      * FIres when a remote video or audio track is added
      *
      * @memberof WebRTC
      */
-    onRemoteTrack: (track: MediaStreamTrack, connection: WebRTCConnection, event: RTCTrackEvent) => void;
+    onRemoteTrack: (track: MediaStreamTrack, connection: ThorIOConnection, event: RTCTrackEvent) => void;
     /**
      * Fires when a remote track is lost
      *
      * @memberof WebRTC
      */
-    onRemoteTrackLost: (track: MediaStreamTrack, connection: WebRTCConnection, event: MediaStreamTrackEvent) => void
+    onRemoteTrackLost: (track: MediaStreamTrack, connection: ThorIOConnection, event: MediaStreamTrackEvent) => void
     /**
      * Fires when local MediaStream is added
      *
@@ -81,21 +74,21 @@ export class WebRTC {
      *
      * @memberof WebRTC
      */
-    onContextConnected: (webRTCConnection: WebRTCConnection, rtcPeerConnection: RTCPeerConnection) => void;
+    onContextConnected: (webRTCConnection: ThorIOConnection, rtcPeerConnection: RTCPeerConnection) => void;
     /**
      * Fires when a WebRTCConnection is closed or lost.
      *
      * @memberof WebRTC
      */
-    onContextDisconnected: (webRTCConnection: WebRTCConnection, rtcPeerConnection: RTCPeerConnection) => void;
+    onContextDisconnected: (webRTCConnection: ThorIOConnection, rtcPeerConnection: RTCPeerConnection) => void;
 
-    private onConnectTo(peerConnections: Array<PeerConnection>) {
+    private onConnectAll(peerConnections: Array<ContextConnection>) {
         this.connect(peerConnections);
     }
 
     private onConnected(peerId: string) {
         if (this.onContextConnected)
-            this.onContextConnected(this.findPeerConnection(peerId), this.getPeerConnection(peerId));
+            this.onContextConnected(this.findPeerConnection(peerId), this.getOrCreateRTCPeerConnection(peerId));
     }
     /**
      * Fires when an RTCPeerConnection is lost
@@ -104,36 +97,31 @@ export class WebRTC {
      * @memberof WebRTC
      */
     onDisconnected(peerId: string) {
-        let peerConnection = this.getPeerConnection(peerId);
+        let peerConnection = this.getOrCreateRTCPeerConnection(peerId);
         if (this.onContextDisconnected)
             this.onContextDisconnected(this.findPeerConnection(peerId), peerConnection);
         peerConnection.close();
         this.removePeerConnection(peerId);
     }
-
     /**
      *Creates an instance of WebRTC.
-     * @param {Controller} brokerController
-     * @param {*} rtcConfig
-     * @param {boolean} [encrypted]
-     * @param {string} [cryptoKey]
+     * @param {Controller} signalingController
+     * @param {RTCPeerConnectionConfig} rtcConfig
+     * @param {IE2EE} [e2ee]
      * @memberof WebRTC
      */
-    constructor(private brokerController: Controller, private rtcConfig: any, e2ee?: IE2EE) {
-
+    constructor(private signalingController: Controller, private rtcConfig: any, e2ee?: IE2EE) {
         if (e2ee) {
             this.isEncrypted = true
             this.e2ee = e2ee;
         } else {
             this.isEncrypted = false;
         }
-
-        this.errors = new Array<any>();
         this.localStreams = new Array<MediaStream>();
         this.dataChannels = new Map<string, DataChannel>();
-        this.peers = new Map<string, WebRTCConnection>();
+        this.peers = new Map<string, ThorIOConnection>();
 
-        this.brokerController.on("contextSignal", (signal: any) => {
+        this.signalingController.on("contextSignal", (signal: any) => {
             let msg = JSON.parse(signal.message);
             switch (msg.type) {
                 case "offer":
@@ -147,17 +135,18 @@ export class WebRTC {
                     break;
             }
         });
-        brokerController.on("contextCreated", (peer: PeerConnection) => {
+
+        this.signalingController.on("contextCreated", (peer: ContextConnection) => {
             this.localPeerId = peer.peerId;
             this.context = peer.context;
             this.onContextCreated(peer);
         });
-        brokerController.on("contextChanged", (context: any) => {
+        this.signalingController.on("contextChanged", (context: any) => {
             this.context = context;
             this.onContextChanged(context);
         });
-        brokerController.on("connectTo", (peers: Array<PeerConnection>) => {
-            this.onConnectTo(peers);
+        this.signalingController.on("connectTo", (peers: Array<ContextConnection>) => {
+            this.onConnectAll(peers);
         });
 
     }
@@ -168,8 +157,8 @@ export class WebRTC {
      * @memberof WebRTC
      */
     addTrackToPeers(track: MediaStreamTrack) {
-        this.peers.forEach((p: WebRTCConnection) => {
-            let pc = p.RTCPeer;
+        this.peers.forEach((p: ThorIOConnection) => {
+            let pc = p.peerConnection;
             pc.onnegotiationneeded = (e) => {
                 pc.createOffer()
                     .then(offer => pc.setLocalDescription(offer))
@@ -180,10 +169,10 @@ export class WebRTC {
                             message: JSON.stringify(pc.localDescription),
                             skipLocalTracks: true
                         };
-                        this.brokerController.invoke("contextSignal", offer)
+                        this.signalingController.invoke("contextSignal", offer)
                     });
             };
-            p.RTCPeer.addTrack(track);
+            p.peerConnection.addTrack(track);
         });
     }
     /**
@@ -193,11 +182,11 @@ export class WebRTC {
      * @memberof WebRTC
      */
     removeTrackFromPeers(track: MediaStreamTrack) {
-        this.peers.forEach((p: WebRTCConnection) => {
-            let sender = p.RTCPeer.getSenders().find((sender: RTCRtpSender) => {
+        this.peers.forEach((p: ThorIOConnection) => {
+            let sender = p.getSenders().find((sender: RTCRtpSender) => {
                 return sender.track.id === track.id;
             });
-            p.RTCPeer.removeTrack(sender);
+            p.peerConnection.removeTrack(sender);
         });
     }
     /**
@@ -209,10 +198,10 @@ export class WebRTC {
      */
     getRtpSenders(peerId: string): Array<RTCRtpSender> {
         if (!this.peers.has(peerId)) throw "Cannot find the peer"
-        return this.peers.get(peerId).RTCPeer.getSenders();
+        return this.peers.get(peerId).getSenders();
     }
     /**
-     * Get rhe RTCRtpReceiver's for the spcified peer.
+     * Get rhe RTCRtpReceiver's for the specified peer.
      *
      * @param {string} peerId
      * @returns {Array<RTCRtpReceiver>}
@@ -220,7 +209,7 @@ export class WebRTC {
      */
     getRtpReceivers(peerId: string): Array<RTCRtpReceiver> {
         if (!this.peers.has(peerId)) throw "Cannot find the peer"
-        return this.peers.get(peerId).RTCPeer.getReceivers();
+        return this.peers.get(peerId).getReceivers();
     }
     /**
      * Set video and audio bandwidth constraints.
@@ -287,25 +276,22 @@ export class WebRTC {
     private onCandidate(event: any) {
         let msg = JSON.parse(event.message);
         let candidate = msg.iceCandidate;
-        let pc = this.getPeerConnection(event.sender);
+        let pc = this.getOrCreateRTCPeerConnection(event.sender);
         pc.addIceCandidate(new RTCIceCandidate(candidate)).then(() => {
         }).catch((err) => {
             this.addError(err);
         });
     }
     private onAnswer(event: any) {
-        let pc = this.getPeerConnection(event.sender);
+        let pc = this.getOrCreateRTCPeerConnection(event.sender);
         pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(event.message))).then((p) => {
         }).catch((err) => {
             this.addError(err);
         });
     }
 
-
-
     private onOffer(event: any, skipLocalTracks: boolean) {
-        let pc = this.getPeerConnection(event.sender);
-
+        let pc = this.getOrCreateRTCPeerConnection(event.sender);
         if (!skipLocalTracks) {
             this.localStreams.forEach((stream: MediaStream) => {
                 stream.getTracks().forEach((track) => {
@@ -331,7 +317,7 @@ export class WebRTC {
                     recipient: event.sender,
                     message: JSON.stringify(description)
                 };
-                this.brokerController.invoke("contextSignal", answer);
+                this.signalingController.invoke("contextSignal", answer);
             }).catch((err: any) => this.addError(err));
         }).catch((err: any) => this.addError(err));
     }
@@ -357,15 +343,15 @@ export class WebRTC {
         this.rtcConfig.iceServers.push(iceServer);
         return this;
     }
-    private removePeerConnection(id: string) {
+    
+    removePeerConnection(id: string) {
         this.peers.delete(id);
     }
 
 
+    private createRTCPeerConnection(id: string): RTCPeerConnection {
 
-    private createPeerConnection(id: string): RTCPeerConnection {
-
-        let config: any
+        let config: any; //RTCPeerConnectionConfig;
 
         if (this.isEncrypted) {
             config = this.rtcConfig;
@@ -376,9 +362,7 @@ export class WebRTC {
         } else {
             config = this.rtcConfig
         }
-
         let rtcPeerConnection = new RTCPeerConnection(config);
-
         rtcPeerConnection.onsignalingstatechange = (state) => { };
         rtcPeerConnection.onicecandidate = (event: any) => {
             if (!event || !event.candidate)
@@ -392,7 +376,7 @@ export class WebRTC {
                         iceCandidate: event.candidate
                     })
                 };
-                this.brokerController.invoke("contextSignal", msg);
+                this.signalingController.invoke("contextSignal", msg);
             }
         };
         rtcPeerConnection.oniceconnectionstatechange = (event: any) => {
@@ -450,33 +434,33 @@ export class WebRTC {
      *  Find a WebRTCConnection based in it's id
      *
      * @param {string} id
-     * @returns {WebRTCConnection}
+     * @returns {ThorIOConnection}
      * @memberof WebRTC
      */
-    findPeerConnection(id: string): WebRTCConnection {
+    findPeerConnection(id: string): ThorIOConnection {
         return this.peers.get(id);
     }
     /**
      * Reconnect all Peers
      *
-     * @returns {Array<PeerConnection>}
+     * @returns {Array<ContextConnection>}
      * @memberof WebRTC
      * @deprecated
      */
-    reconnectAll(): Array<PeerConnection> {
+    reconnectAll(): Array<ContextConnection> {
         throw "not yet implemeted";
     }
-    private getPeerConnection(id: string): RTCPeerConnection {
+    private getOrCreateRTCPeerConnection(id: string): RTCPeerConnection {
         let match = this.peers.get(id);
         if (!match) {
-            let pc = new WebRTCConnection(id, this.createPeerConnection(id));
+            let pc = new ThorIOConnection(id, this.createRTCPeerConnection(id));
             this.peers.set(id, pc);
-            return pc.RTCPeer;
+            return pc.peerConnection;
         }
-        return match.RTCPeer;
+        return match.peerConnection;
     }
-    private createOffer(peer: PeerConnection) {
-        let peerConnection = this.createPeerConnection(peer.peerId);
+    private createOffer(peer: ContextConnection) {
+        let peerConnection = this.createRTCPeerConnection(peer.peerId);
         this.localStreams.forEach((stream) => {
             stream.getTracks().forEach((track: MediaStreamTrack) => {
                 const rtpSender = peerConnection.addTrack(track, stream);
@@ -501,7 +485,7 @@ export class WebRTC {
                     recipient: peer.peerId,
                     message: JSON.stringify(description)
                 };
-                this.brokerController.invoke("contextSignal", offer);
+                this.signalingController.invoke("contextSignal", offer);
             }).catch((err: any) => {
                 this.addError(err);
             });
@@ -516,8 +500,8 @@ export class WebRTC {
      * @memberof WebRTC
      */
     disconnect() {
-        this.peers.forEach((connection: WebRTCConnection) => {
-            connection.RTCPeer.close();
+        this.peers.forEach((connection: ThorIOConnection) => {
+            connection.peerConnection.close();
         });
         this.changeContext(Math.random().toString(36).substring(2));
     }
@@ -529,21 +513,23 @@ export class WebRTC {
      */
     disconnectPeer(id: string): void {
         let peer = this.findPeerConnection(id);
-        peer.RTCPeer.close();
+        peer.peerConnection.close();
     }
     /**
-     * Connect peers
+     * Connect all Peers
      *
-     * @param {Array<PeerConnection>} peerConnections
-     * @returns {WebRTC}
+     * @param {Array<ContextConnection>} peerConnections
      * @memberof WebRTC
      */
-    connect(peerConnections: Array<PeerConnection>): WebRTC {
-        peerConnections.forEach((peerConnection: PeerConnection) => {
-            let pc = new WebRTCConnection(peerConnection.peerId, this.createOffer(peerConnection));
-            this.peers.set(peerConnection.peerId, pc);
+    connect(peerConnections: Array<ContextConnection>): void {
+        peerConnections.forEach((peerConnection: ContextConnection) => {
+            this.connectTo(peerConnection)
         });
-        return this;
+    }
+    connectTo(peerConnection: ContextConnection): void {
+        let pc = new ThorIOConnection(peerConnection.peerId, this.createOffer(peerConnection));
+        if (!this.peers.has(peerConnection.peerId))
+            this.peers.set(peerConnection.peerId, pc);
     }
     /**
      * Change context
@@ -553,18 +539,19 @@ export class WebRTC {
      * @memberof WebRTC
      */
     changeContext(context: string): WebRTC {
-        this.brokerController.invoke("changeContext", { context: context });
+        this.signalingController.invoke("changeContext", { context: context });
         return this;
     }
     private connectPeers() {
-        this.brokerController.invoke("connectContext", {});
+        this.signalingController.invoke("connectContext", {});
     }
     /**
-     * Connect to the context and all it's current cliets
+     * Connect to the context and all it's current ContextConnections)
      *
      * @memberof WebRTC
      */
     connectContext() {
         this.connectPeers();
     }
+    
 }

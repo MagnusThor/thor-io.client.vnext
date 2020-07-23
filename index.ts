@@ -9,5 +9,7 @@ export {PropertyMessage} from "./src/Messages/PropertyMessage";
 export {Controller as Proxy} from "./src/Controller";
 export {Utils} from "./src/Utils/Utils";
 export {WebRTC} from "./src/WebRTC/WebRTC";
-export {WebRTCConnection} from './src/WebRTC/WebRTCConnection'
+export {ThorIOConnection } from './src/WebRTC/ThorIOConnection'
 export {Controller} from './src/Controller'
+export {E2EEBase} from "./src/E2EE/E2EEBase"
+export {ContextConnection} from './src/WebRTC/ContextConnection';
