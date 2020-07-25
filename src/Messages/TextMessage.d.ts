@@ -1,3 +1,9 @@
+/**
+ * thor-io TextMessage
+ *
+ * @export
+ * @class TextMessage
+ */
 export declare class TextMessage {
     B: ArrayBuffer | Uint8Array;
     T: string;
@@ -5,7 +11,7 @@ export declare class TextMessage {
     C: string;
     I: string;
     F: boolean;
-    get JSON(): any;
+    toJSON(): any;
     constructor(topic: string, object: any, controller: string, buffer?: ArrayBuffer | Uint8Array, uuid?: string, isFinal?: boolean);
     toString(): string;
     static fromArrayBuffer(buffer: ArrayBuffer): TextMessage;

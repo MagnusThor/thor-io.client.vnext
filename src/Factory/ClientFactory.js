@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const BinaryMessage_1 = require("./Messages/BinaryMessage");
-const Controller_1 = require("./Controller");
-class Factory {
+const BinaryMessage_1 = require("../Messages/BinaryMessage");
+const Controller_1 = require("../Controller/Controller");
+class ClientFactory {
     constructor(url, controllers, params) {
         this.url = url;
         this.controllers = new Map();
@@ -50,4 +50,4 @@ class Factory {
     onError(error) { }
     onClose(event) { }
 }
-exports.Factory = Factory;
+exports.ClientFactory = ClientFactory;

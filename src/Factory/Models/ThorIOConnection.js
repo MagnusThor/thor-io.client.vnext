@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const Utils_1 = require("../Utils/Utils");
+const Utils_1 = require("../../Utils/Utils");
 class ThorIOConnection {
     constructor(id, rtcPeerConnection) {
         this.id = id;

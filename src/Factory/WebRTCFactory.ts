@@ -1,17 +1,17 @@
-import { ContextConnection } from './ContextConnection';
-import { PeerChannel } from "./PeerChannel";
-import { DataChannel } from './DataChannel';
-import { BandwidthConstraints } from "./BandwidthConstraints";
-import { Controller } from "../Controller";
+import { ThorIOConnection } from './Models/ThorIOConnection';
+import { BandwidthConstraints } from '../Utils/BandwidthConstraints';
 import { IE2EE } from '../E2EE/E2EEBase';
-import { ThorIOConnection } from './ThorIOConnection';
+import { DataChannel } from '../DataChannels/DataChannel';
+import { ContextConnection } from './Models/ContextConnection';
+import { Controller } from '../Controller/Controller';
+import { PeerChannel } from '../DataChannels/PeerChannel';
 /**
  *  WebRTC abstraction layer for thor-io.vnext
  *
  * @export
  * @class WebRTC
  */
-export class WebRTC {
+export class WebRTCFactory {
     public peers: Map<string, ThorIOConnection>;
     public peer: RTCPeerConnection;
     public dataChannels: Map<string, DataChannel>;
@@ -325,10 +325,10 @@ export class WebRTC {
      * Add a local MediaStream to the client
      *
      * @param {*} stream
-     * @returns {WebRTC}
+     * @returns {WebRTCFactory}
      * @memberof WebRTC
      */
-    addLocalStream(stream: any): WebRTC {
+    addLocalStream(stream: any): WebRTCFactory {
         this.localStreams.push(stream);
         return this;
     }
@@ -336,10 +336,10 @@ export class WebRTC {
      * Add an iceServer iceServers configuration
      *
      * @param {RTCIceServer} iceServer
-     * @returns {WebRTC}
+     * @returns {WebRTCFactory}
      * @memberof WebRTC
      */
-    addIceServer(iceServer: RTCIceServer): WebRTC {
+    addIceServer(iceServer: RTCIceServer): WebRTCFactory {
         this.rtcConfig.iceServers.push(iceServer);
         return this;
     }
@@ -535,10 +535,10 @@ export class WebRTC {
      * Change context
      * 
      * @param {string} context
-     * @returns {WebRTC}
+     * @returns {WebRTCFactory}
      * @memberof WebRTC
      */
-    changeContext(context: string): WebRTC {
+    changeContext(context: string): WebRTCFactory {
         this.signalingController.invoke("changeContext", { context: context });
         return this;
     }

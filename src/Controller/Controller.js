@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const TextMessage_1 = require("./Messages/TextMessage");
-const Listener_1 = require("./Listener");
+const TextMessage_1 = require("../Messages/TextMessage");
+const Listener_1 = require("../Events/Listener");
 class Controller {
     constructor(alias, ws) {
         this.alias = alias;

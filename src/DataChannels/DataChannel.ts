@@ -1,8 +1,8 @@
 import { TextMessage } from "../Messages/TextMessage";
-import { PeerChannel } from "./PeerChannel";
-import { DataChannelListner } from "../DataChannels/DataChannelListner";
+import { DataChannelListner } from "./DataChannelListner";
 import { BinaryMessage } from '../Messages/BinaryMessage';
 import { Utils } from '../Utils/Utils';
+import { PeerChannel } from './PeerChannel';
 /**
  * Create a new DataChannel for the WebRTCPeerConnection
  *

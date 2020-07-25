@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const TextMessage_1 = require("../Messages/TextMessage");
-const DataChannelListner_1 = require("../DataChannels/DataChannelListner");
+const DataChannelListner_1 = require("./DataChannelListner");
 const BinaryMessage_1 = require("../Messages/BinaryMessage");
 const Utils_1 = require("../Utils/Utils");
 class DataChannel {

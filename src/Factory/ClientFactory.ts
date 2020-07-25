@@ -1,12 +1,13 @@
-import { BinaryMessage } from "./Messages/BinaryMessage";
-import { Controller } from "./Controller";
+import { BinaryMessage } from "../Messages/BinaryMessage";
+import { Controller } from "../Controller/Controller";
+
 /**
  * Create a connection to a thor-io.vnext server and its controllers
  *
  * @export
  * @class Factory
  */
-export class Factory {
+export class ClientFactory {
     private ws: WebSocket;
     private toQuery(obj: any) {
         return `?${Object.keys(obj).map(key => (encodeURIComponent(key) + "=" +

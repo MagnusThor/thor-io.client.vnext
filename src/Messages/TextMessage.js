@@ -11,7 +11,7 @@ class TextMessage {
         this.I = uuid || Utils_1.Utils.newGuid();
         this.F = isFinal;
     }
-    get JSON() {
+    toJSON() {
         return {
             T: this.T,
             D: JSON.stringify(this.D),
@@ -21,7 +21,7 @@ class TextMessage {
         };
     }
     toString() {
-        return JSON.stringify(this.JSON);
+        return JSON.stringify(this.toJSON());
     }
     static fromArrayBuffer(buffer) {
         return BinaryMessage_1.BinaryMessage.fromArrayBuffer(buffer);

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const Listener_1 = require("../Listener");
+const Listener_1 = require("../Events/Listener");
 class DataChannelListner extends Listener_1.Listener {
     constructor(channelName, topic, fn) {
         super(topic, fn);

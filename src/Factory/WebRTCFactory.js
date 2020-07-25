@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const PeerChannel_1 = require("./PeerChannel");
-const DataChannel_1 = require("./DataChannel");
-const BandwidthConstraints_1 = require("./BandwidthConstraints");
-const ThorIOConnection_1 = require("./ThorIOConnection");
-class WebRTC {
+const ThorIOConnection_1 = require("./Models/ThorIOConnection");
+const BandwidthConstraints_1 = require("../Utils/BandwidthConstraints");
+const DataChannel_1 = require("../DataChannels/DataChannel");
+const PeerChannel_1 = require("../DataChannels/PeerChannel");
+class WebRTCFactory {
     constructor(signalingController, rtcConfig, e2ee) {
         this.signalingController = signalingController;
         this.rtcConfig = rtcConfig;
@@ -357,4 +357,4 @@ class WebRTC {
         this.connectPeers();
     }
 }
-exports.WebRTC = WebRTC;
+exports.WebRTCFactory = WebRTCFactory;

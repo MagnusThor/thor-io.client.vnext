@@ -1,7 +1,7 @@
 import { BinaryMessage } from "./BinaryMessage";
 import { Utils } from '../Utils/Utils';
 /**
- * thor-io TextMessage (json)
+ * thor-io TextMessage 
  *
  * @export
  * @class TextMessage
@@ -13,7 +13,7 @@ export class TextMessage {
     C: string;
     I: string;
     F: boolean;
-    get JSON(): any {
+    toJSON(): any {
         return {
             T: this.T,
             D: JSON.stringify(this.D),
@@ -22,7 +22,7 @@ export class TextMessage {
             F: this.F
         };
     }
-    constructor(topic: string, object: any, controller: string, buffer?: ArrayBuffer | Uint8Array,uuid?:string,isFinal?:boolean) {
+    constructor(topic: string, object: any, controller: string, buffer?: ArrayBuffer | Uint8Array, uuid?: string, isFinal?: boolean) {
         this.D = object;
         this.T = topic;
         this.C = controller;
@@ -31,7 +31,7 @@ export class TextMessage {
         this.F = isFinal;
     }
     toString() {
-        return JSON.stringify(this.JSON);
+        return JSON.stringify(this.toJSON());
     }
     static fromArrayBuffer(buffer: ArrayBuffer): TextMessage {
         return BinaryMessage.fromArrayBuffer(buffer);

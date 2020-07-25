@@ -9,7 +9,7 @@ class Main {
         factory.onOpen = (signaling) => {
             signaling.onOpen = () => {
                 let e2ee = new __1.E2EEBase(randomCryptoKey);
-                let rtc = new __1.WebRTC(signaling, {
+                let rtc = new __1.WebRTCFactory(signaling, {
                     "sdpSemantics": "unified-plan",
                     "iceTransports": "all",
                     "rtcpMuxPolicy": "require",

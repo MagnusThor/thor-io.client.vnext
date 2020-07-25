@@ -1,7 +1,7 @@
-import { TextMessage } from "./Messages/TextMessage";
-import { Listener } from "./Listener";
+import { TextMessage } from "../Messages/TextMessage";
+import { Listener } from '../Events/Listener';
 /**
- * Create a client controller(proxy) that for a thor-io.vnext controller
+ * Create a client controller(proxy) for a thor-io.vnext controller
  *
  * @export
  * @class Controller

@@ -1,4 +1,4 @@
-import { Utils, Factory, Controller, WebRTC, ThorIOConnection, ContextConnection, E2EEBase } from '..'
+import { Utils, Factory, Controller, WebRTCFactory, ThorIOConnection, ContextConnection, E2EEBase } from '..'
 
 export class Main {
     constructor() {
@@ -17,7 +17,7 @@ export class Main {
 
                 let e2ee = new E2EEBase(randomCryptoKey);
 
-                let rtc = new WebRTC(signaling, {
+                let rtc = new WebRTCFactory(signaling, {
                     "sdpSemantics": "unified-plan",
                     "iceTransports": "all",
                     "rtcpMuxPolicy": "require",
