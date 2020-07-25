@@ -3,13 +3,6 @@ export interface IE2EE {
     encode(frame: any, controller: any): any;
     setKey(key: string): void;
 }
-/**
- * Primitive encrypion
- * based on https://github.com/webrtc/samples/blob/gh-pages/src/content/peerconnection/endtoend-encryption/js/main.js
- * @export
- * @class E2EEBase
- * @implements {IE2EE}
- */
 export declare class E2EEBase implements IE2EE {
     currentCryptoKey: string;
     private frameTypeToCryptoOffset;

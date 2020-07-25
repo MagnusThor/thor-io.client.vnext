@@ -1,9 +1,3 @@
-/**
- * thor-io TextMessage
- *
- * @export
- * @class TextMessage
- */
 export declare class TextMessage {
     B: ArrayBuffer | Uint8Array;
     T: string;
