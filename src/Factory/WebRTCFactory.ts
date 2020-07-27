@@ -9,7 +9,7 @@ import { PeerChannel } from '../DataChannels/PeerChannel';
  *  WebRTC abstraction layer for thor-io.vnext
  *
  * @export
- * @class WebRTC
+ * @class WebRTCFactory
  */
 export class WebRTCFactory {
     public peers: Map<string, ThorIOConnection>;
@@ -24,61 +24,61 @@ export class WebRTCFactory {
     /**
      * Fires when an error occurs
      *
-     * @memberof WebRTC
+     * @memberof WebRTCFactoryFactory
      */
     onError: (err: any) => void;
     /**
      * Fires when client connects to broker
      *
-     * @memberof WebRTC
+     * @memberof WebRTCFactoryFactory
      */
     onContextCreated: (peerConnection: ContextConnection) => void;
     /**
      * Fires when client changes context ,and server confirms
      *
-     * @memberof WebRTC
+     * @memberof WebRTCFactoryFactory
      */
     onContextChanged: (context: { context: string, peerId: string }) => void;
     /**
      * Fires when a remote audio track is lost
      *
-     * @memberof WebRTC
+     * @memberof WebRTCFactoryFactory
      */
     onRemoteAudioTrack: (track: MediaStreamTrack, connection: ThorIOConnection, event: RTCTrackEvent) => void;
     /**
      *  Fires when a remote video track is added
      *
-     * @memberof WebRTC
+     * @memberof WebRTCFactoryFactory
      */
     onRemoteVideoTrack: (track: MediaStreamTrack, connection: ThorIOConnection, event: RTCTrackEvent) => void;
     /**
      * FIres when a remote video or audio track is added
      *
-     * @memberof WebRTC
+     * @memberof WebRTCFactoryFactory
      */
     onRemoteTrack: (track: MediaStreamTrack, connection: ThorIOConnection, event: RTCTrackEvent) => void;
     /**
      * Fires when a remote track is lost
      *
-     * @memberof WebRTC
+     * @memberof WebRTCFactoryFactory
      */
     onRemoteTrackLost: (track: MediaStreamTrack, connection: ThorIOConnection, event: MediaStreamTrackEvent) => void
     /**
      * Fires when local MediaStream is added
      *
-     * @memberof WebRTC
+     * @memberof WebRTCFactoryFactory
      */
     onLocalStream: (stream: MediaStream) => void;
     /**
      * Fires for each WebRTCConnection that connects sucessfully to context and client
      *
-     * @memberof WebRTC
+     * @memberof WebRTCFactoryFactory
      */
     onContextConnected: (webRTCConnection: ThorIOConnection, rtcPeerConnection: RTCPeerConnection) => void;
     /**
      * Fires when a WebRTCConnection is closed or lost.
      *
-     * @memberof WebRTC
+     * @memberof WebRTCFactoryFactory
      */
     onContextDisconnected: (webRTCConnection: ThorIOConnection, rtcPeerConnection: RTCPeerConnection) => void;
 
@@ -94,7 +94,7 @@ export class WebRTCFactory {
      * Fires when an RTCPeerConnection is lost
      *
      * @param {string} peerId
-     * @memberof WebRTC
+     * @memberof WebRTCFactoryFactory
      */
     onDisconnected(peerId: string) {
         let peerConnection = this.getOrCreateRTCPeerConnection(peerId);
@@ -108,7 +108,7 @@ export class WebRTCFactory {
      * @param {Controller} signalingController
      * @param {RTCPeerConnectionConfig} rtcConfig
      * @param {IE2EE} [e2ee]
-     * @memberof WebRTC
+     * @memberof WebRTCFactoryFactory
      */
     constructor(private signalingController: Controller, private rtcConfig: any, e2ee?: IE2EE) {
         if (e2ee) {
@@ -154,7 +154,7 @@ export class WebRTCFactory {
      * Add a MediaStreamTrack to remote peers.
      *
      * @param {MediaStreamTrack} track
-     * @memberof WebRTC
+     * @memberof WebRTCFactoryFactory
      */
     addTrackToPeers(track: MediaStreamTrack) {
         this.peers.forEach((p: ThorIOConnection) => {
@@ -179,7 +179,7 @@ export class WebRTCFactory {
      * Remove a MediaStreamTrack from the remote peers
      *
      * @param {MediaStreamTrack} track
-     * @memberof WebRTC
+     * @memberof WebRTCFactoryFactory
      */
     removeTrackFromPeers(track: MediaStreamTrack) {
         this.peers.forEach((p: ThorIOConnection) => {
@@ -194,7 +194,7 @@ export class WebRTCFactory {
      *
      * @param {string} peerId
      * @returns {Array<RTCRtpSender>}
-     * @memberof WebRTC
+     * @memberof WebRTCFactoryFactory
      */
     getRtpSenders(peerId: string): Array<RTCRtpSender> {
         if (!this.peers.has(peerId)) throw "Cannot find the peer"
@@ -205,7 +205,7 @@ export class WebRTCFactory {
      *
      * @param {string} peerId
      * @returns {Array<RTCRtpReceiver>}
-     * @memberof WebRTC
+     * @memberof WebRTCFactoryFactory
      */
     getRtpReceivers(peerId: string): Array<RTCRtpReceiver> {
         if (!this.peers.has(peerId)) throw "Cannot find the peer"
@@ -216,7 +216,7 @@ export class WebRTCFactory {
      *
      * @param {number} videobandwidth
      * @param {number} audiobandwidth
-     * @memberof WebRTC
+     * @memberof WebRTCFactoryFactory
      */
     setBandwithConstraints(videobandwidth: number, audiobandwidth: number) {
         this.bandwidthConstraints = new BandwidthConstraints(videobandwidth, audiobandwidth);
@@ -254,7 +254,7 @@ export class WebRTCFactory {
      *
      * @param {string} name
      * @returns {DataChannel}
-     * @memberof WebRTC
+     * @memberof WebRTCFactoryFactory
      */
     createDataChannel(name: string): DataChannel {
         let channel = new DataChannel(name);
@@ -265,7 +265,7 @@ export class WebRTCFactory {
      * Remove the DataChannel
      *
      * @param {string} name
-     * @memberof WebRTC
+     * @memberof WebRTCFactoryFactory
      */
     removeDataChannel(name: string) {
         this.dataChannels.delete(name);
@@ -326,7 +326,7 @@ export class WebRTCFactory {
      *
      * @param {*} stream
      * @returns {WebRTCFactory}
-     * @memberof WebRTC
+     * @memberof WebRTCFactoryFactory
      */
     addLocalStream(stream: any): WebRTCFactory {
         this.localStreams.push(stream);
@@ -337,7 +337,7 @@ export class WebRTCFactory {
      *
      * @param {RTCIceServer} iceServer
      * @returns {WebRTCFactory}
-     * @memberof WebRTC
+     * @memberof WebRTCFactoryFactory
      */
     addIceServer(iceServer: RTCIceServer): WebRTCFactory {
         this.rtcConfig.iceServers.push(iceServer);
@@ -435,7 +435,7 @@ export class WebRTCFactory {
      *
      * @param {string} id
      * @returns {ThorIOConnection}
-     * @memberof WebRTC
+     * @memberof WebRTCFactoryFactory
      */
     findPeerConnection(id: string): ThorIOConnection {
         return this.peers.get(id);
@@ -444,7 +444,7 @@ export class WebRTCFactory {
      * Reconnect all Peers
      *
      * @returns {Array<ContextConnection>}
-     * @memberof WebRTC
+     * @memberof WebRTCFactoryFactory
      * @deprecated
      */
     reconnectAll(): Array<ContextConnection> {
@@ -497,7 +497,7 @@ export class WebRTCFactory {
     /**
      * Close all connections
      *
-     * @memberof WebRTC
+     * @memberof WebRTCFactoryFactory
      */
     disconnect() {
         this.peers.forEach((connection: ThorIOConnection) => {
@@ -509,7 +509,7 @@ export class WebRTCFactory {
      * Close the specified PeerConnection
      *
      * @param {string} id
-     * @memberof WebRTC
+     * @memberof WebRTCFactoryFactory
      */
     disconnectPeer(id: string): void {
         let peer = this.findPeerConnection(id);
@@ -519,7 +519,7 @@ export class WebRTCFactory {
      * Connect all Peers
      *
      * @param {Array<ContextConnection>} peerConnections
-     * @memberof WebRTC
+     * @memberof WebRTCFactoryFactory
      */
     connect(peerConnections: Array<ContextConnection>): void {
         peerConnections.forEach((peerConnection: ContextConnection) => {
@@ -536,7 +536,7 @@ export class WebRTCFactory {
      * 
      * @param {string} context
      * @returns {WebRTCFactory}
-     * @memberof WebRTC
+     * @memberof WebRTCFactoryFactory
      */
     changeContext(context: string): WebRTCFactory {
         this.signalingController.invoke("changeContext", { context: context });
@@ -548,7 +548,7 @@ export class WebRTCFactory {
     /**
      * Connect to the context and all it's current ContextConnections)
      *
-     * @memberof WebRTC
+     * @memberof WebRTCFactoryFactory
      */
     connectContext() {
         this.connectPeers();

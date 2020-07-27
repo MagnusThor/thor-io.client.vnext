@@ -1,6 +1,38 @@
 {
   "name": "thor-io.client-vnext",
-  "version": "2.2.0-beta.2",
+  "version": "2.2.0-beta.3",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MagnusThor/thor-io.client.vnext"
+  },
+  "keywords": [
+    "unity",
+    ".net",
+    "realtime",
+    "websockets",
+    "WebRTC",
+    "PubSub",
+    "RPC",
+    "Smart-RPC",
+    "IoT",
+    "NodeJS",
+    "RTC",
+    "Typescript",
+    "DataChannels",
+    "P2P",
+    "E2EE"
+],
+  "author": {
+    "name": "Magnus Thor",
+    "email": "magnus.thor74@gmail.com"
+  },
+  "contributors": [
+    {
+      "name": "Ricky Davies",
+      "email": "rdavies@zen.co.uk"
+    }
+  ],
   "license": "MIT",
   "dependencies": {
     "@types/node": "^14.0.26",

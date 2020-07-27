@@ -5,7 +5,7 @@ import { Controller } from "../Controller/Controller";
  * Create a connection to a thor-io.vnext server and its controllers
  *
  * @export
- * @class Factory
+ * @class ClientFactory
  */
 export class ClientFactory {
     private ws: WebSocket;
@@ -20,7 +20,7 @@ export class ClientFactory {
      * @param {string} url
      * @param {Array<string>} controllers
      * @param {*} [params]
-     * @memberof Factory
+     * @memberof ClientFactory
      */
     constructor(private url: string, controllers: Array<string>, params?: any) {
         this.controllers = new Map<string,Controller>();
@@ -28,7 +28,6 @@ export class ClientFactory {
         this.ws.binaryType = "arraybuffer";
         controllers.forEach(alias => {
             this.controllers.set(alias,new Controller(alias, this.ws));
-            //this.proxys.push(new Controller(alias, this.ws));
         });
         this.ws.onmessage = event => {
             if (typeof (event.data) !== "object") {
@@ -55,17 +54,17 @@ export class ClientFactory {
     /**
      * Close the connection
      *
-     * @memberof Factory
+     * @memberof ClientFactory
      */
     close() {
         this.ws.close();
     }
     /**
-     * Get a proxy aka controller
+     * Get a Controller
      *
      * @param {string} alias
      * @returns {Controller}
-     * @memberof Factory
+     * @memberof ClientFactory
      */
     getController(alias: string): Controller {
         return this.controllers.get(alias);        
@@ -74,7 +73,7 @@ export class ClientFactory {
      * Remove the controller
      *
      * @param {string} alias
-     * @memberof Factory
+     * @memberof ClientFactory
      */
     removeController(alias: string) {
         this.controllers.delete(alias);       
@@ -83,21 +82,21 @@ export class ClientFactory {
      * Fires when connection is established to the thor-io.vnext server
      *
      * @param {*} proxys
-     * @memberof Factory
+     * @memberof ClientFactory
      */
     onOpen(controllers: any) { }
     /**
      *  Fires when a connection goes wrong
      *
      * @param {*} error
-     * @memberof Factory
+     * @memberof ClientFactory
      */
     onError(error: any) { }
      /**
      *  Fires when a connection is closed by the thor-io.vnext server
      *
      * @param {*} error
-     * @memberof Factory
+     * @memberof ClientFactory
      */
     onClose(event: any) { }
 }

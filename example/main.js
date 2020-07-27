@@ -5,7 +5,7 @@ class Main {
     constructor() {
         let useE2EE = location.search.includes("e2ee");
         let randomCryptoKey = __1.Utils.newRandomString(5);
-        let factory = new __1.Factory("wss://dev-wss.kollokvium.net/", ["broker"]);
+        let factory = new __1.ClientFactory("wss://dev-wss.kollokvium.net/", ["broker"]);
         factory.onOpen = (signaling) => {
             signaling.onOpen = () => {
                 let e2ee = new __1.E2EEBase(randomCryptoKey);
@@ -19,8 +19,7 @@ class Main {
                             "urls": "stun:stun.l.google.com:19302"
                         }
                     ]
-                }, useE2EE ? e2ee : undefined);
-                console.log("using es22");
+                }, e2ee);
                 if (useE2EE) {
                     document.querySelector("input#e2ee-key").value = randomCryptoKey;
                     document.querySelector("#set-key").addEventListener("click", (e) => {
@@ -100,7 +99,5 @@ class Main {
 }
 exports.Main = Main;
 document.addEventListener("DOMContentLoaded", () => {
-    500;
-    console.log("Starting");
     let test = new Main();
 });

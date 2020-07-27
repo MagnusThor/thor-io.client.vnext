@@ -2,8 +2,8 @@
 export { BandwidthConstraints } from "./src/Utils/BandwidthConstraints";
 export { BinaryMessage } from "./src/Messages/BinaryMessage";
 export { DataChannel } from "./src/DataChannels/DataChannel";
-export { ClientFactory as Factory } from "./src/Factory/ClientFactory";
-export { TextMessage as Message } from "./src/Messages/TextMessage";
+export { ClientFactory } from "./src/Factory/ClientFactory";
+export { TextMessage } from "./src/Messages/TextMessage";
 export { Listener } from "./src/Events/Listener"
 export { PeerChannel } from "./src/DataChannels/PeerChannel";
 export { PropertyMessage } from "./src/Messages/PropertyMessage";

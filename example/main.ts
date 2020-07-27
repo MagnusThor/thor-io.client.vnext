@@ -1,11 +1,11 @@
-import { Utils, Factory, Controller, WebRTCFactory, ThorIOConnection, ContextConnection, E2EEBase } from '..'
+import { Utils, ClientFactory, Controller, WebRTCFactory, ThorIOConnection, ContextConnection, E2EEBase } from '..'
 
 export class Main {
     constructor() {
 
         let useE2EE = location.search.includes("e2ee");
         let randomCryptoKey = Utils.newRandomString(5);
-        let factory = new Factory("wss://dev-wss.kollokvium.net/", ["broker"]);
+        let factory = new ClientFactory("wss://dev-wss.kollokvium.net/", ["broker"]);
 
         factory.onOpen = (signaling: Controller) => {
             /**
@@ -27,9 +27,7 @@ export class Main {
                             "urls": "stun:stun.l.google.com:19302"
                         }
                     ]
-                }, useE2EE ? e2ee : undefined);
-
-                console.log("using es22");
+                }, e2ee);
 
                 if (useE2EE) {
                     (document.querySelector("input#e2ee-key") as HTMLInputElement).value = randomCryptoKey;
@@ -134,13 +132,5 @@ export class Main {
 
 
 document.addEventListener("DOMContentLoaded", () => {
-    500
-
-    console.log("Starting");
-
     let test = new Main();
-
-
-
-
 });
