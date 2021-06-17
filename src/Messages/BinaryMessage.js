@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.BinaryMessage = void 0;
 const Utils_1 = require("../Utils/Utils");
 const TextMessage_1 = require("./TextMessage");
 class BinaryMessage {

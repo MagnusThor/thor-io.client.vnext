@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.WebRTCFactory = void 0;
 const ThorIOConnection_1 = require("./Models/ThorIOConnection");
-const BandwidthConstraints_1 = require("../Utils/BandwidthConstraints");
 const DataChannel_1 = require("../DataChannels/DataChannel");
 const PeerChannel_1 = require("../DataChannels/PeerChannel");
 class WebRTCFactory {
@@ -75,7 +75,6 @@ class WebRTCFactory {
                     this.signalingController.invoke("contextSignal", offer);
                 });
             };
-            p.peerConnection.addTrack(track);
         });
     }
     removeTrackFromPeers(track) {
@@ -95,12 +94,6 @@ class WebRTCFactory {
         if (!this.peers.has(peerId))
             throw "Cannot find the peer";
         return this.peers.get(peerId).getReceivers();
-    }
-    setBandwithConstraints(videobandwidth, audiobandwidth) {
-        this.bandwidthConstraints = new BandwidthConstraints_1.BandwidthConstraints(videobandwidth, audiobandwidth);
-    }
-    setMediaBitrates(sdp) {
-        return this.setMediaBitrate(this.setMediaBitrate(sdp, "video", this.bandwidthConstraints.videobandwidth), "audio", this.bandwidthConstraints.audiobandwidth);
     }
     setMediaBitrate(sdp, media, bitrate) {
         let lines = sdp.split("\n");
@@ -174,8 +167,6 @@ class WebRTCFactory {
         pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(event.message)));
         pc.createAnswer({ offerToReceiveAudio: true, offerToReceiveVideo: true }).then((description) => {
             pc.setLocalDescription(description).then(() => {
-                if (this.bandwidthConstraints)
-                    description.sdp = this.setMediaBitrates(description.sdp);
                 let answer = {
                     sender: this.localPeerId,
                     recipient: event.sender,
@@ -184,6 +175,52 @@ class WebRTCFactory {
                 this.signalingController.invoke("contextSignal", answer);
             }).catch((err) => this.addError(err));
         }).catch((err) => this.addError(err));
+    }
+    getStatsFromPeers() {
+        this.peers.forEach((p) => {
+            let sender = p.getSenders().find((sender) => {
+                sender.getStats().then(res => {
+                    res.forEach(report => {
+                        let bytes;
+                        let headerBytes;
+                        let packets;
+                        if (report.type === 'outbound-rtp') {
+                            if (report.isRemote) {
+                                return;
+                            }
+                            const timestamp = report.timestamp;
+                            bytes = report.bytesSent;
+                            headerBytes = report.headerBytesSent;
+                            packets = report.packetsSent;
+                        }
+                    });
+                });
+            });
+        });
+    }
+    applyBandwithConstraints(bandwidth) {
+        this.peers.forEach((p) => {
+            const sender = p.getSenders().find((sender) => {
+                const parameters = sender.getParameters();
+                if (!parameters.encodings) {
+                    parameters.encodings = [{}];
+                }
+                if (parameters.encodings[0]) {
+                    parameters.encodings[0].maxBitrate = bandwidth * 1000;
+                    sender.setParameters(parameters).then(() => {
+                        console.log("apply bandwith constraints successfully applied. ");
+                    }).catch(e => {
+                        this.onError(e);
+                    });
+                }
+            });
+        });
+    }
+    async setVideoConstraints(height, frameRate) {
+        this.peers.forEach((p) => {
+            let sender = p.getSenders().find((sender) => {
+            });
+        });
     }
     addLocalStream(stream) {
         this.localStreams.push(stream);
@@ -310,8 +347,6 @@ class WebRTCFactory {
         });
         peerConnection.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true }).then((description) => {
             peerConnection.setLocalDescription(description).then(() => {
-                if (this.bandwidthConstraints)
-                    description.sdp = this.setMediaBitrates(description.sdp);
                 let offer = {
                     sender: this.localPeerId,
                     recipient: peer.peerId,

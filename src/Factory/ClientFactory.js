@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ClientFactory = void 0;
 const BinaryMessage_1 = require("../Messages/BinaryMessage");
 const Controller_1 = require("../Controller/Controller");
 class ClientFactory {

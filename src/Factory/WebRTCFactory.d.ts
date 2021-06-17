@@ -12,7 +12,7 @@ export declare class WebRTCFactory {
     dataChannels: Map<string, DataChannel>;
     localPeerId: string;
     context: string;
-    localStreams: Array<any>;
+    localStreams: Array<MediaStream>;
     bandwidthConstraints: BandwidthConstraints;
     e2ee: IE2EE;
     isEncrypted: boolean;
@@ -46,7 +46,10 @@ export declare class WebRTCFactory {
     private onCandidate;
     private onAnswer;
     private onOffer;
-    addLocalStream(stream: any): WebRTCFactory;
+    getStatsFromPeers(): void;
+    applyBandwithConstraints(bandwidth: number): void;
+    setVideoConstraints(height: number, frameRate: number): Promise<void>;
+    addLocalStream(stream: MediaStream): WebRTCFactory;
     addIceServer(iceServer: RTCIceServer): WebRTCFactory;
     removePeerConnection(id: string): void;
     private createRTCPeerConnection;

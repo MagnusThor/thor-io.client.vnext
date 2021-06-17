@@ -1,10 +1,14 @@
-import { Utils, ClientFactory, Controller, WebRTCFactory, ThorIOConnection, ContextConnection, E2EEBase } from '..'
+
+
+
+import { VideoConstraints } from '..';
+import { ClientFactory, Controller, WebRTCFactory, ThorIOConnection, ContextConnection, E2EEBase } from '..'
 
 export class Main {
     constructor() {
 
-        let useE2EE = location.search.includes("e2ee");
-        let randomCryptoKey = Utils.newRandomString(5);
+     //   let useE2EE = location.search.includes("e2ee");
+      //  let randomCryptoKey = Utils.newRandomString(5);
         let factory = new ClientFactory("wss://dev-wss.kollokvium.net/", ["broker"]);
 
         factory.onOpen = (signaling: Controller) => {
@@ -15,7 +19,7 @@ export class Main {
             signaling.onOpen = () => {
 
 
-                let e2ee = new E2EEBase(randomCryptoKey);
+              //  let e2ee = new E2EEBase(randomCryptoKey);
 
                 let rtc = new WebRTCFactory(signaling, {
                     "sdpSemantics": "unified-plan",
@@ -27,14 +31,24 @@ export class Main {
                             "urls": "stun:stun.l.google.com:19302"
                         }
                     ]
-                }, e2ee);
+                }); // , e2ee
 
-                if (useE2EE) {
-                    (document.querySelector("input#e2ee-key") as HTMLInputElement).value = randomCryptoKey;
-                    document.querySelector("#set-key").addEventListener("click", (e) => {
-                        rtc.e2ee.setKey((document.querySelector("input#e2ee-key") as HTMLInputElement).value);
-                    });
-                }
+
+                setInterval( () => {
+                        rtc.getStatsFromPeers();
+                },2000);
+    
+
+                // set videoConstaints
+
+               // rtc.videoContraints = new VideoConstraints(2500,360);
+
+                // if (useE2EE) {
+                //     (document.querySelector("input#e2ee-key") as HTMLInputElement).value = randomCryptoKey;
+                //     document.querySelector("#set-key").addEventListener("click", (e) => {
+                //         rtc.e2ee.setKey((document.querySelector("input#e2ee-key") as HTMLInputElement).value);
+                //     });
+                // }
 
 
                 rtc.onContextDisconnected = (w: ThorIOConnection, r: RTCPeerConnection) => {
@@ -67,6 +81,8 @@ export class Main {
 
                     console.log(`Addaed a video for connection ${connection.id}`);
 
+                    
+
                     let video = document.createElement("video");
                     video.muted = true;
                     video.classList.add(`t${track.id}`);
@@ -74,14 +90,14 @@ export class Main {
 
                     let stream: MediaStream;
 
-                    if (useE2EE) {
-                        let streams = (event as any).receiver.createEncodedStreams();
-                        streams.readableStream
-                            .pipeThrough(new TransformStream({
-                                transform: rtc.e2ee.decode.bind(rtc.e2ee),
-                            }))
-                            .pipeTo(streams.writableStream);
-                    }
+                    // if (useE2EE) {
+                    //     let streams = (event as any).receiver.createEncodedStreams();
+                    //     streams.readableStream
+                    //         .pipeThrough(new TransformStream({
+                    //             transform: rtc.e2ee.decode.bind(rtc.e2ee),
+                    //         }))
+                    //         .pipeTo(streams.writableStream);
+                    // }
 
                     if (event.streams[0]) {
                         stream = event.streams[0];
@@ -106,8 +122,13 @@ export class Main {
 
                 });
 
+
+                document.querySelector("#apply-constraints").addEventListener("click", () => {
+                        rtc.applyBandwithConstraints(250);
+                });
+
                 navigator.mediaDevices.getUserMedia({
-                    audio: true, video: {
+                    audio: false, video: {
                         width: {
                             ideal: 640
                         }, height: { ideal: 360 }
@@ -121,6 +142,7 @@ export class Main {
 
 
 
+           
 
 
 
@@ -133,4 +155,5 @@ export class Main {
 
 document.addEventListener("DOMContentLoaded", () => {
     let test = new Main();
+   
 });

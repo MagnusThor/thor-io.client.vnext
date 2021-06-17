@@ -1,10 +1,14 @@
 import { ThorIOConnection } from './Models/ThorIOConnection';
-import { BandwidthConstraints } from '../Utils/BandwidthConstraints';
+//import { BandwidthConstraints } from '../Utils/BandwidthConstraints';
 import { IE2EE } from '../E2EE/E2EEBase';
 import { DataChannel } from '../DataChannels/DataChannel';
 import { ContextConnection } from './Models/ContextConnection';
 import { Controller } from '../Controller/Controller';
 import { PeerChannel } from '../DataChannels/PeerChannel';
+
+
+import adapter from 'webrtc-adapter';
+
 /**
  *  WebRTC abstraction layer for thor-io.vnext
  *
@@ -17,10 +21,11 @@ export class WebRTCFactory {
     public dataChannels: Map<string, DataChannel>;
     public localPeerId: string;
     public context: string;
-    public localStreams: Array<any>;
-    public bandwidthConstraints: BandwidthConstraints;
+    public localStreams: Array<MediaStream>;
+   // public bandwidthConstraints: BandwidthConstraints;
     public e2ee: IE2EE;
     public isEncrypted: boolean;
+
     /**
      * Fires when an error occurs
      *
@@ -172,7 +177,8 @@ export class WebRTCFactory {
                         this.signalingController.invoke("contextSignal", offer)
                     });
             };
-            p.peerConnection.addTrack(track);
+
+
         });
     }
     /**
@@ -211,19 +217,21 @@ export class WebRTCFactory {
         if (!this.peers.has(peerId)) throw "Cannot find the peer"
         return this.peers.get(peerId).getReceivers();
     }
-    /**
-     * Set video and audio bandwidth constraints.
-     *
-     * @param {number} videobandwidth
-     * @param {number} audiobandwidth
-     * @memberof WebRTCFactoryFactory
-     */
-    setBandwithConstraints(videobandwidth: number, audiobandwidth: number) {
-        this.bandwidthConstraints = new BandwidthConstraints(videobandwidth, audiobandwidth);
-    }
-    private setMediaBitrates(sdp: string): string {
-        return this.setMediaBitrate(this.setMediaBitrate(sdp, "video", this.bandwidthConstraints.videobandwidth), "audio", this.bandwidthConstraints.audiobandwidth);
-    }
+    // /**
+    //  * Set video and audio bandwidth constraints.
+    //  *
+    //  * @param {number} videobandwidth
+    //  * @param {number} audiobandwidth
+    //  * @memberof WebRTCFactoryFactory
+    //  */
+    // setBandwithConstraints(videobandwidth: number, audiobandwidth: number) {
+    //     this.bandwidthConstraints = new BandwidthConstraints(videobandwidth, audiobandwidth);
+    // }
+
+    // private setMediaBitrates(sdp: string): string {
+    //     return this.setMediaBitrate(this.setMediaBitrate(sdp, "video", this.bandwidthConstraints.videobandwidth), "audio", this.bandwidthConstraints.audiobandwidth);
+    // }
+
     private setMediaBitrate(sdp: string, media: string, bitrate: number): string {
         let lines = sdp.split("\n");
         let line = -1;
@@ -294,6 +302,7 @@ export class WebRTCFactory {
         let pc = this.getOrCreateRTCPeerConnection(event.sender);
         if (!skipLocalTracks) {
             this.localStreams.forEach((stream: MediaStream) => {
+
                 stream.getTracks().forEach((track) => {
                     let rtpSender = pc.addTrack(track, stream);
                     if (this.isEncrypted) {
@@ -310,9 +319,11 @@ export class WebRTCFactory {
         pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(event.message)));
         pc.createAnswer({ offerToReceiveAudio: true, offerToReceiveVideo: true }).then((description: RTCSessionDescriptionInit) => {
             pc.setLocalDescription(description).then(() => {
-                if (this.bandwidthConstraints)
-                    description.sdp = this.setMediaBitrates(description.sdp);
-                let answer = {
+               
+                // if (this.bandwidthConstraints)
+                //     description.sdp = this.setMediaBitrates(description.sdp);
+               
+                    let answer = {
                     sender: this.localPeerId,
                     recipient: event.sender,
                     message: JSON.stringify(description)
@@ -321,14 +332,77 @@ export class WebRTCFactory {
             }).catch((err: any) => this.addError(err));
         }).catch((err: any) => this.addError(err));
     }
+
+    /**
+     * Get outbound RTP stats for each all PeerConnection's RTP senders.
+     *
+     * @memberof WebRTCFactory
+     */
+    getStatsFromPeers() {
+        this.peers.forEach((p: ThorIOConnection) => {
+            let sender = p.getSenders().find((sender: RTCRtpSender) => {
+                sender.getStats().then(res => {
+                    res.forEach(report => {
+                        let bytes;
+                        let headerBytes;
+                        let packets;
+                        if (report.type === 'outbound-rtp') {
+                            if (report.isRemote) {
+                                return;
+                            }
+                            const timestamp = report.timestamp;
+                            bytes = report.bytesSent;
+                            headerBytes = report.headerBytesSent;
+                            packets = report.packetsSent;
+                        }
+                    });
+                });
+            });
+        });
+    }
+    /**
+     * apply bandwith constraints all PeerConnection's RTPSenders.
+     *
+     * @param {number} bandwidth
+     * @memberof WebRTCFactory
+     */
+    applyBandwithConstraints(bandwidth: number) {
+        this.peers.forEach((p: ThorIOConnection) => {
+            const sender = p.getSenders().find((sender: RTCRtpSender) => {
+                const parameters = sender.getParameters() as any;
+                if (!parameters.encodings) {
+                    parameters.encodings = [{}];
+                }
+                if (parameters.encodings[0]) {
+                    parameters.encodings[0].maxBitrate = bandwidth * 1000;
+                    sender.setParameters(parameters).then(() => {
+                        console.log("apply bandwith constraints successfully applied. ")
+                    }).catch(e => {
+                        this.onError(e);
+                    });
+                }
+            });
+        });
+    }
+
+    async setVideoConstraints(height: number, frameRate: number): Promise<void> {
+        this.peers.forEach((p: ThorIOConnection) => {
+            let sender = p.getSenders().find((sender: RTCRtpSender) => {
+
+            });
+        });
+
+        //await sender.track.applyConstraints({ height });
+
+    }
     /**
      * Add a local MediaStream to the client
      *
-     * @param {*} stream
+     * @param {MediaStream} stream
      * @returns {WebRTCFactory}
      * @memberof WebRTCFactoryFactory
      */
-    addLocalStream(stream: any): WebRTCFactory {
+    addLocalStream(stream: MediaStream): WebRTCFactory {
         this.localStreams.push(stream);
         return this;
     }
@@ -343,7 +417,7 @@ export class WebRTCFactory {
         this.rtcConfig.iceServers.push(iceServer);
         return this;
     }
-    
+
     removePeerConnection(id: string) {
         this.peers.delete(id);
     }
@@ -478,8 +552,10 @@ export class WebRTCFactory {
         });
         peerConnection.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true }).then((description: RTCSessionDescriptionInit) => {
             peerConnection.setLocalDescription(description).then(() => {
-                if (this.bandwidthConstraints)
-                    description.sdp = this.setMediaBitrates(description.sdp);
+               
+                // if (this.bandwidthConstraints)
+                //     description.sdp = this.setMediaBitrates(description.sdp);
+
                 let offer = {
                     sender: this.localPeerId,
                     recipient: peer.peerId,
@@ -553,5 +629,5 @@ export class WebRTCFactory {
     connectContext() {
         this.connectPeers();
     }
-    
+
 }

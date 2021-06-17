@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Recorder = void 0;
 class Recorder {
     constructor(stream, mimeType, ignoreMutedMedia) {
         this.stream = stream;

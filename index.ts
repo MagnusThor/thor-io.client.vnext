@@ -1,5 +1,4 @@
 
-export { BandwidthConstraints } from "./src/Utils/BandwidthConstraints";
 export { BinaryMessage } from "./src/Messages/BinaryMessage";
 export { DataChannel } from "./src/DataChannels/DataChannel";
 export { ClientFactory } from "./src/Factory/ClientFactory";
@@ -13,3 +12,5 @@ export { ThorIOConnection } from './src/Factory/Models/ThorIOConnection'
 export { Controller } from './src/Controller/Controller'
 export { E2EEBase } from "./src/E2EE/E2EEBase"
 export { ContextConnection } from './src/Factory/Models/ContextConnection'
+export { VideoConstraints } from './src/Utils/Constraints'
+

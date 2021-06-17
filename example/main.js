@@ -1,14 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Main = void 0;
 const __1 = require("..");
 class Main {
     constructor() {
-        let useE2EE = location.search.includes("e2ee");
-        let randomCryptoKey = __1.Utils.newRandomString(5);
         let factory = new __1.ClientFactory("wss://dev-wss.kollokvium.net/", ["broker"]);
         factory.onOpen = (signaling) => {
             signaling.onOpen = () => {
-                let e2ee = new __1.E2EEBase(randomCryptoKey);
                 let rtc = new __1.WebRTCFactory(signaling, {
                     "sdpSemantics": "unified-plan",
                     "iceTransports": "all",
@@ -19,13 +17,10 @@ class Main {
                             "urls": "stun:stun.l.google.com:19302"
                         }
                     ]
-                }, e2ee);
-                if (useE2EE) {
-                    document.querySelector("input#e2ee-key").value = randomCryptoKey;
-                    document.querySelector("#set-key").addEventListener("click", (e) => {
-                        rtc.e2ee.setKey(document.querySelector("input#e2ee-key").value);
-                    });
-                }
+                });
+                setInterval(() => {
+                    rtc.getStatsFromPeers();
+                }, 2000);
                 rtc.onContextDisconnected = (w, r) => {
                     console.log("lost a peer", w, r);
                 };
@@ -54,14 +49,6 @@ class Main {
                     video.classList.add(`t${track.id}`);
                     video.autoplay = true;
                     let stream;
-                    if (useE2EE) {
-                        let streams = event.receiver.createEncodedStreams();
-                        streams.readableStream
-                            .pipeThrough(new TransformStream({
-                            transform: rtc.e2ee.decode.bind(rtc.e2ee),
-                        }))
-                            .pipeTo(streams.writableStream);
-                    }
                     if (event.streams[0]) {
                         stream = event.streams[0];
                     }
@@ -81,8 +68,11 @@ class Main {
                         rtc.addTrackToPeers(e.getVideoTracks()[0]);
                     });
                 });
+                document.querySelector("#apply-constraints").addEventListener("click", () => {
+                    rtc.applyBandwithConstraints(250);
+                });
                 navigator.mediaDevices.getUserMedia({
-                    audio: true, video: {
+                    audio: false, video: {
                         width: {
                             ideal: 640
                         }, height: { ideal: 360 }

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.E2EEBase = void 0;
 class E2EEBase {
     constructor(currentCryptoKey) {
         this.currentCryptoKey = currentCryptoKey;
