@@ -308,7 +308,7 @@ export class WebRTCFactory {
             });
         }
         pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(event.message)));
-        pc.createAnswer({ offerToReceiveAudio: true, offerToReceiveVideo: true }).then((description: RTCSessionDescriptionInit) => {
+        pc.createAnswer(<any>{ offerToReceiveAudio: true, offerToReceiveVideo: true }).then((description: RTCSessionDescriptionInit) => {
             pc.setLocalDescription(description).then(() => {
                 if (this.bandwidthConstraints)
                     description.sdp = this.setMediaBitrates(description.sdp);

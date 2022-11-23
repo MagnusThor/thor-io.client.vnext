@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Controller = void 0;
 const TextMessage_1 = require("../Messages/TextMessage");
 const Listener_1 = require("../Events/Listener");
 class Controller {
