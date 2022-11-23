@@ -8,6 +8,7 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "sourceMap": false,
+    "declaration": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "esModuleInterop": true,
@@ -15,9 +16,11 @@
     "noImplicitAny": false,
     "rootDirs": [
       "src"
-    ]
+    ],
+    "outDir": "dist/"
   },
+  "include": ["src"],
   "exclude": [
-    "node_modules"
+    "node_modules",
   ]
 }

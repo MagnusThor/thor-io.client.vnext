@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.DataChannel = void 0;
 const TextMessage_1 = require("../Messages/TextMessage");
 const DataChannelListner_1 = require("./DataChannelListner");
 const BinaryMessage_1 = require("../Messages/BinaryMessage");

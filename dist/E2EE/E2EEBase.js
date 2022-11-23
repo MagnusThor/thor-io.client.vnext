@@ -1,6 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.E2EEBase = void 0;
 class E2EEBase {
+    setKey(key) {
+        this.currentCryptoKey = key;
+    }
     constructor(currentCryptoKey) {
         this.currentCryptoKey = currentCryptoKey;
         this.frameTypeToCryptoOffset = {
@@ -12,9 +16,6 @@ class E2EEBase {
         this.currentKeyIdentifier = 0;
         this.rcount = 0;
         this.scount = 0;
-    }
-    setKey(key) {
-        this.currentCryptoKey = key;
     }
     dump(encodedFrame, direction, max = 16) {
         const data = new Uint8Array(encodedFrame.data);

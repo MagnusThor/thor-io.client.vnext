@@ -1,10 +1,25 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.WebRTCFactory = void 0;
 const ThorIOConnection_1 = require("./Models/ThorIOConnection");
 const BandwidthConstraints_1 = require("../Utils/BandwidthConstraints");
 const DataChannel_1 = require("../DataChannels/DataChannel");
 const PeerChannel_1 = require("../DataChannels/PeerChannel");
 class WebRTCFactory {
+    onConnectAll(peerConnections) {
+        this.connect(peerConnections);
+    }
+    onConnected(peerId) {
+        if (this.onContextConnected)
+            this.onContextConnected(this.findPeerConnection(peerId), this.getOrCreateRTCPeerConnection(peerId));
+    }
+    onDisconnected(peerId) {
+        let peerConnection = this.getOrCreateRTCPeerConnection(peerId);
+        if (this.onContextDisconnected)
+            this.onContextDisconnected(this.findPeerConnection(peerId), peerConnection);
+        peerConnection.close();
+        this.removePeerConnection(peerId);
+    }
     constructor(signalingController, rtcConfig, e2ee) {
         this.signalingController = signalingController;
         this.rtcConfig = rtcConfig;
@@ -44,20 +59,6 @@ class WebRTCFactory {
         this.signalingController.on("connectTo", (peers) => {
             this.onConnectAll(peers);
         });
-    }
-    onConnectAll(peerConnections) {
-        this.connect(peerConnections);
-    }
-    onConnected(peerId) {
-        if (this.onContextConnected)
-            this.onContextConnected(this.findPeerConnection(peerId), this.getOrCreateRTCPeerConnection(peerId));
-    }
-    onDisconnected(peerId) {
-        let peerConnection = this.getOrCreateRTCPeerConnection(peerId);
-        if (this.onContextDisconnected)
-            this.onContextDisconnected(this.findPeerConnection(peerId), peerConnection);
-        peerConnection.close();
-        this.removePeerConnection(peerId);
     }
     addTrackToPeers(track) {
         this.peers.forEach((p) => {
