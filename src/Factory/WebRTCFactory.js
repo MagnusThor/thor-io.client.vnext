@@ -189,14 +189,22 @@ class WebRTCFactory {
                                 return;
                             }
                             const timestamp = report.timestamp;
-                            bytes = report.bytesSent;
-                            headerBytes = report.headerBytesSent;
-                            packets = report.packetsSent;
+                            let bytes = report.bytesSent;
+                            let headerBytes = report.headerBytesSent;
+                            let packets = report.packetsSent;
                         }
                     });
                 });
             });
         });
+    }
+    applyVideoConstraints(mtc) {
+        let work = Array.from(this.peers.values()).map(v => {
+            return v.getSenders().map(sender => {
+                return sender.track.applyConstraints(mtc);
+            });
+        });
+        return Promise.all(work);
     }
     applyBandwithConstraints(bandwidth) {
         this.peers.forEach((p) => {

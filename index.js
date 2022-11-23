@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.VideoConstraints = exports.ContextConnection = exports.E2EEBase = exports.Controller = exports.ThorIOConnection = exports.WebRTCFactory = exports.Utils = exports.PropertyMessage = exports.PeerChannel = exports.Listener = exports.TextMessage = exports.ClientFactory = exports.DataChannel = exports.BinaryMessage = void 0;
+exports.ContextConnection = exports.E2EEBase = exports.Controller = exports.ThorIOConnection = exports.WebRTCFactory = exports.Utils = exports.PropertyMessage = exports.PeerChannel = exports.Listener = exports.TextMessage = exports.ClientFactory = exports.DataChannel = exports.BinaryMessage = void 0;
 var BinaryMessage_1 = require("./src/Messages/BinaryMessage");
 Object.defineProperty(exports, "BinaryMessage", { enumerable: true, get: function () { return BinaryMessage_1.BinaryMessage; } });
 var DataChannel_1 = require("./src/DataChannels/DataChannel");
@@ -27,5 +27,3 @@ var E2EEBase_1 = require("./src/E2EE/E2EEBase");
 Object.defineProperty(exports, "E2EEBase", { enumerable: true, get: function () { return E2EEBase_1.E2EEBase; } });
 var ContextConnection_1 = require("./src/Factory/Models/ContextConnection");
 Object.defineProperty(exports, "ContextConnection", { enumerable: true, get: function () { return ContextConnection_1.ContextConnection; } });
-var Constraints_1 = require("./src/Utils/Constraints");
-Object.defineProperty(exports, "VideoConstraints", { enumerable: true, get: function () { return Constraints_1.VideoConstraints; } });

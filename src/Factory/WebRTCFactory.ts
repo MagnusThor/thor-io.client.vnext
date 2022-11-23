@@ -317,13 +317,10 @@ export class WebRTCFactory {
             });
         }
         pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(event.message)));
-        pc.createAnswer({ offerToReceiveAudio: true, offerToReceiveVideo: true }).then((description: RTCSessionDescriptionInit) => {
+        const rtcAnswer = { offerToReceiveAudio: true, offerToReceiveVideo: true } as RTCAnswerOptions
+        pc.createAnswer(rtcAnswer).then((description: RTCSessionDescriptionInit) => {
             pc.setLocalDescription(description).then(() => {
-               
-                // if (this.bandwidthConstraints)
-                //     description.sdp = this.setMediaBitrates(description.sdp);
-               
-                    let answer = {
+               const answer = {
                     sender: this.localPeerId,
                     recipient: event.sender,
                     message: JSON.stringify(description)
@@ -332,43 +329,31 @@ export class WebRTCFactory {
             }).catch((err: any) => this.addError(err));
         }).catch((err: any) => this.addError(err));
     }
-
     /**
-     * Get outbound RTP stats for each all PeerConnection's RTP senders.
+     * Apply MediaTrack constraints to each frame / peer within buffer 
      *
+     * @param {MediaTrackConstraints} mtc
+     * @return {*}  {Promise<any>}
      * @memberof WebRTCFactory
      */
-    getStatsFromPeers() {
-        this.peers.forEach((p: ThorIOConnection) => {
-            let sender = p.getSenders().find((sender: RTCRtpSender) => {
-                sender.getStats().then(res => {
-                    res.forEach(report => {
-                        let bytes;
-                        let headerBytes;
-                        let packets;
-                        if (report.type === 'outbound-rtp') {
-                            if (report.isRemote) {
-                                return;
-                            }
-                            const timestamp = report.timestamp;
-                            bytes = report.bytesSent;
-                            headerBytes = report.headerBytesSent;
-                            packets = report.packetsSent;
-                        }
-                    });
-                });
-            });
+    applyVideoConstraints(mtc:MediaTrackConstraints): Promise<any>{
+        let work =  Array.from(this.peers.values()).map ( v => {
+            return v.getSenders().map( sender => {
+                return sender.track.applyConstraints(mtc);
+            })
         });
+        return Promise.all(work);
     }
+
     /**
      * apply bandwith constraints all PeerConnection's RTPSenders.
      *
      * @param {number} bandwidth
      * @memberof WebRTCFactory
      */
-    applyBandwithConstraints(bandwidth: number) {
+    applyBandwithConstraints(bandwidth: number):void {
         this.peers.forEach((p: ThorIOConnection) => {
-            const sender = p.getSenders().find((sender: RTCRtpSender) => {
+             p.getSenders().find((sender: RTCRtpSender) => {
                 const parameters = sender.getParameters() as any;
                 if (!parameters.encodings) {
                     parameters.encodings = [{}];
@@ -376,24 +361,13 @@ export class WebRTCFactory {
                 if (parameters.encodings[0]) {
                     parameters.encodings[0].maxBitrate = bandwidth * 1000;
                     sender.setParameters(parameters).then(() => {
-                        console.log("apply bandwith constraints successfully applied. ")
+                        console.log("apply bandwith constraints successfully applied.")
                     }).catch(e => {
                         this.onError(e);
                     });
                 }
             });
         });
-    }
-
-    async setVideoConstraints(height: number, frameRate: number): Promise<void> {
-        this.peers.forEach((p: ThorIOConnection) => {
-            let sender = p.getSenders().find((sender: RTCRtpSender) => {
-
-            });
-        });
-
-        //await sender.track.applyConstraints({ height });
-
     }
     /**
      * Add a local MediaStream to the client
@@ -499,13 +473,13 @@ export class WebRTCFactory {
         });
         return rtcPeerConnection;
     }
-    cleanUp(id: string) {
+    private cleanUp(id: string) {
         this.dataChannels.forEach((d: DataChannel) => {
             d.removePeerChannel(id);
         });
     }
     /**
-     *  Find a WebRTCConnection based in it's id
+     *  Find a WebRTCConnection based on it's id
      *
      * @param {string} id
      * @returns {ThorIOConnection}
@@ -551,11 +525,7 @@ export class WebRTCFactory {
                 this.onLocalStream(stream);
         });
         peerConnection.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true }).then((description: RTCSessionDescriptionInit) => {
-            peerConnection.setLocalDescription(description).then(() => {
-               
-                // if (this.bandwidthConstraints)
-                //     description.sdp = this.setMediaBitrates(description.sdp);
-
+            peerConnection.setLocalDescription(description).then(() => {              
                 let offer = {
                     sender: this.localPeerId,
                     recipient: peer.peerId,
