@@ -1,8 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ContextConnection = exports.E2EEBase = exports.Controller = exports.ThorIOConnection = exports.WebRTCFactory = exports.Utils = exports.PropertyMessage = exports.PeerChannel = exports.Listener = exports.TextMessage = exports.ClientFactory = exports.DataChannel = exports.BinaryMessage = exports.BandwidthConstraints = void 0;
-var BandwidthConstraints_1 = require("./Utils/BandwidthConstraints");
-Object.defineProperty(exports, "BandwidthConstraints", { enumerable: true, get: function () { return BandwidthConstraints_1.BandwidthConstraints; } });
+exports.ContextConnection = exports.E2EEBase = exports.Controller = exports.ThorIOConnection = exports.WebRTCFactory = exports.Utils = exports.PropertyMessage = exports.PeerChannel = exports.Listener = exports.TextMessage = exports.ClientFactory = exports.DataChannel = exports.BinaryMessage = void 0;
 var BinaryMessage_1 = require("./Messages/BinaryMessage");
 Object.defineProperty(exports, "BinaryMessage", { enumerable: true, get: function () { return BinaryMessage_1.BinaryMessage; } });
 var DataChannel_1 = require("./DataChannels/DataChannel");

@@ -1,8 +1,8 @@
 import { Utils } from '../../Utils/Utils';
 export class ThorIOConnection {
-    id: string;
-    peerConnection: RTCPeerConnection;
-    uuid: string;
+    id: string
+    peerConnection: RTCPeerConnection
+    uuid: string
     constructor(id: string, rtcPeerConnection: RTCPeerConnection) {
         this.id = id;
         this.peerConnection = rtcPeerConnection;

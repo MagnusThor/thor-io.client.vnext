@@ -1,4 +1,3 @@
-export { BandwidthConstraints } from "./Utils/BandwidthConstraints";
 export { BinaryMessage } from "./Messages/BinaryMessage";
 export { DataChannel } from "./DataChannels/DataChannel";
 export { ClientFactory } from "./Factory/ClientFactory";
