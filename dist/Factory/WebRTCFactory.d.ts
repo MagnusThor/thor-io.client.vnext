@@ -1,5 +1,4 @@
 import { ThorIOConnection } from './Models/ThorIOConnection';
-import { BandwidthConstraints } from '../Utils/BandwidthConstraints';
 import { IE2EE } from '../E2EE/E2EEBase';
 import { DataChannel } from '../DataChannels/DataChannel';
 import { ContextConnection } from './Models/ContextConnection';
@@ -13,7 +12,6 @@ export declare class WebRTCFactory {
     localPeerId: string;
     context: string;
     localStreams: Array<MediaStream>;
-    bandwidthConstraints: BandwidthConstraints;
     e2ee: IE2EE;
     isEncrypted: boolean;
     onError: (err: any) => void;
@@ -37,8 +35,6 @@ export declare class WebRTCFactory {
     removeTrackFromPeers(track: MediaStreamTrack): void;
     getRtpSenders(peerId: string): Array<RTCRtpSender>;
     getRtpReceivers(peerId: string): Array<RTCRtpReceiver>;
-    setBandwithConstraints(videobandwidth: number, audiobandwidth: number): void;
-    private setMediaBitrates;
     private setMediaBitrate;
     createDataChannel(name: string): DataChannel;
     removeDataChannel(name: string): void;
@@ -46,14 +42,13 @@ export declare class WebRTCFactory {
     private onCandidate;
     private onAnswer;
     private onOffer;
-    getStatsFromPeers(): void;
+    applyVideoConstraints(mtc: MediaTrackConstraints): Promise<any>;
     applyBandwithConstraints(bandwidth: number): void;
-    setVideoConstraints(height: number, frameRate: number): Promise<void>;
     addLocalStream(stream: MediaStream): WebRTCFactory;
     addIceServer(iceServer: RTCIceServer): WebRTCFactory;
     removePeerConnection(id: string): void;
     private createRTCPeerConnection;
-    cleanUp(id: string): void;
+    private cleanUp;
     findPeerConnection(id: string): ThorIOConnection;
     reconnectAll(): Array<ContextConnection>;
     private getOrCreateRTCPeerConnection;

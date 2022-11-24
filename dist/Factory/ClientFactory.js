@@ -4,6 +4,10 @@ exports.ClientFactory = void 0;
 const BinaryMessage_1 = require("../Messages/BinaryMessage");
 const Controller_1 = require("../Controller/Controller");
 class ClientFactory {
+    toQuery(obj) {
+        return `?${Object.keys(obj).map(key => (encodeURIComponent(key) + "=" +
+            encodeURIComponent(obj[key]))).join("&")}`;
+    }
     constructor(url, controllers, params) {
         this.url = url;
         this.controllers = new Map();
@@ -33,10 +37,6 @@ class ClientFactory {
             this.IsConnected = true;
             this.onOpen.apply(this, Array.from(this.controllers.values()));
         };
-    }
-    toQuery(obj) {
-        return `?${Object.keys(obj).map(key => (encodeURIComponent(key) + "=" +
-            encodeURIComponent(obj[key]))).join("&")}`;
     }
     close() {
         this.ws.close();

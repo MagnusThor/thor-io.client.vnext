@@ -5,6 +5,20 @@ const ThorIOConnection_1 = require("./Models/ThorIOConnection");
 const DataChannel_1 = require("../DataChannels/DataChannel");
 const PeerChannel_1 = require("../DataChannels/PeerChannel");
 class WebRTCFactory {
+    onConnectAll(peerConnections) {
+        this.connect(peerConnections);
+    }
+    onConnected(peerId) {
+        if (this.onContextConnected)
+            this.onContextConnected(this.findPeerConnection(peerId), this.getOrCreateRTCPeerConnection(peerId));
+    }
+    onDisconnected(peerId) {
+        let peerConnection = this.getOrCreateRTCPeerConnection(peerId);
+        if (this.onContextDisconnected)
+            this.onContextDisconnected(this.findPeerConnection(peerId), peerConnection);
+        peerConnection.close();
+        this.removePeerConnection(peerId);
+    }
     constructor(signalingController, rtcConfig, e2ee) {
         this.signalingController = signalingController;
         this.rtcConfig = rtcConfig;
@@ -44,20 +58,6 @@ class WebRTCFactory {
         this.signalingController.on("connectTo", (peers) => {
             this.onConnectAll(peers);
         });
-    }
-    onConnectAll(peerConnections) {
-        this.connect(peerConnections);
-    }
-    onConnected(peerId) {
-        if (this.onContextConnected)
-            this.onContextConnected(this.findPeerConnection(peerId), this.getOrCreateRTCPeerConnection(peerId));
-    }
-    onDisconnected(peerId) {
-        let peerConnection = this.getOrCreateRTCPeerConnection(peerId);
-        if (this.onContextDisconnected)
-            this.onContextDisconnected(this.findPeerConnection(peerId), peerConnection);
-        peerConnection.close();
-        this.removePeerConnection(peerId);
     }
     addTrackToPeers(track) {
         this.peers.forEach((p) => {
@@ -165,9 +165,10 @@ class WebRTCFactory {
             });
         }
         pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(event.message)));
-        pc.createAnswer({ offerToReceiveAudio: true, offerToReceiveVideo: true }).then((description) => {
+        const rtcAnswer = { offerToReceiveAudio: true, offerToReceiveVideo: true };
+        pc.createAnswer(rtcAnswer).then((description) => {
             pc.setLocalDescription(description).then(() => {
-                let answer = {
+                const answer = {
                     sender: this.localPeerId,
                     recipient: event.sender,
                     message: JSON.stringify(description)
@@ -175,28 +176,6 @@ class WebRTCFactory {
                 this.signalingController.invoke("contextSignal", answer);
             }).catch((err) => this.addError(err));
         }).catch((err) => this.addError(err));
-    }
-    getStatsFromPeers() {
-        this.peers.forEach((p) => {
-            let sender = p.getSenders().find((sender) => {
-                sender.getStats().then(res => {
-                    res.forEach(report => {
-                        let bytes;
-                        let headerBytes;
-                        let packets;
-                        if (report.type === 'outbound-rtp') {
-                            if (report.isRemote) {
-                                return;
-                            }
-                            const timestamp = report.timestamp;
-                            let bytes = report.bytesSent;
-                            let headerBytes = report.headerBytesSent;
-                            let packets = report.packetsSent;
-                        }
-                    });
-                });
-            });
-        });
     }
     applyVideoConstraints(mtc) {
         let work = Array.from(this.peers.values()).map(v => {
@@ -208,7 +187,7 @@ class WebRTCFactory {
     }
     applyBandwithConstraints(bandwidth) {
         this.peers.forEach((p) => {
-            const sender = p.getSenders().find((sender) => {
+            p.getSenders().find((sender) => {
                 const parameters = sender.getParameters();
                 if (!parameters.encodings) {
                     parameters.encodings = [{}];
@@ -216,17 +195,11 @@ class WebRTCFactory {
                 if (parameters.encodings[0]) {
                     parameters.encodings[0].maxBitrate = bandwidth * 1000;
                     sender.setParameters(parameters).then(() => {
-                        console.log("apply bandwith constraints successfully applied. ");
+                        console.log("apply bandwith constraints successfully applied.");
                     }).catch(e => {
                         this.onError(e);
                     });
                 }
-            });
-        });
-    }
-    async setVideoConstraints(height, frameRate) {
-        this.peers.forEach((p) => {
-            let sender = p.getSenders().find((sender) => {
             });
         });
     }

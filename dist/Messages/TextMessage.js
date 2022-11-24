@@ -4,14 +4,6 @@ exports.TextMessage = void 0;
 const BinaryMessage_1 = require("./BinaryMessage");
 const Utils_1 = require("../Utils/Utils");
 class TextMessage {
-    constructor(topic, object, controller, buffer, uuid, isFinal) {
-        this.D = object;
-        this.T = topic;
-        this.C = controller;
-        this.B = buffer;
-        this.I = uuid || Utils_1.Utils.newGuid();
-        this.F = isFinal;
-    }
     toJSON() {
         return {
             T: this.T,
@@ -20,6 +12,14 @@ class TextMessage {
             I: this.I,
             F: this.F
         };
+    }
+    constructor(topic, object, controller, buffer, uuid, isFinal) {
+        this.D = object;
+        this.T = topic;
+        this.C = controller;
+        this.B = buffer;
+        this.I = uuid || Utils_1.Utils.newGuid();
+        this.F = isFinal;
     }
     toString() {
         return JSON.stringify(this.toJSON());
