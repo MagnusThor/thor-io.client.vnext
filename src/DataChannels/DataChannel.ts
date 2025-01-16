@@ -1,8 +1,9 @@
-import { TextMessage } from "../Messages/TextMessage";
-import { DataChannelListner } from "./DataChannelListner";
 import { BinaryMessage } from '../Messages/BinaryMessage';
+import { TextMessage } from '../Messages/TextMessage';
 import { Utils } from '../Utils/Utils';
+import { DataChannelListner } from './DataChannelListner';
 import { PeerChannel } from './PeerChannel';
+
 /**
  * Create a new DataChannel for the WebRTCPeerConnection
  *
@@ -94,7 +95,7 @@ export class DataChannel {
 
     private dispatchMessage(msg: TextMessage) {
         let listener = this.findListener(msg.T);
-        listener && listener.fn.apply(this, [JSON.parse(msg.D), msg.B]);
+        listener && listener.action.apply(this, [JSON.parse(msg.D), msg.B]);
     }
 
     /**

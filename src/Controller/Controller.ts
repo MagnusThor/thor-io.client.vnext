@@ -1,5 +1,6 @@
-import { TextMessage } from "../Messages/TextMessage";
 import { Listener } from '../Events/Listener';
+import { TextMessage } from '../Messages/TextMessage';
+
 /**
  * Create a client controller(proxy) for a thor-io.vnext controller
  *
@@ -63,16 +64,16 @@ export class Controller {
      * Create a subscription 
      *
      * @param {string} topic
-     * @param {*} callback
+     * @param {*} fn
      * @returns {Listener}
      * @memberof Controller
      */
-    subscribe(topic: string, callback: any): Listener {
+    subscribe<T>(topic: string, fn: (data:T,buffer?:ArrayBuffer) => void): Listener {
         this.ws.send(new TextMessage("___subscribe", {
             topic: topic,
             controller: this.alias
         }, this.alias).toString());
-        return this.on(topic, callback);
+        return this.on(topic, fn);
     }
     /**
      * Remove a subscription
@@ -94,7 +95,7 @@ export class Controller {
      * @returns {Listener}
      * @memberof Controller
      */
-    on(topic: string, fn: any): Listener {
+    on<T>(topic: string, fn: (data:T,buffer?:ArrayBuffer) => void): Listener {
         let listener = new Listener(topic, fn);
         this.listeners.set(topic,listener);
         return listener;
@@ -153,7 +154,7 @@ export class Controller {
      * @returns {Controller}
      * @memberof Controller
      */
-    invoke(method: string, data: any, controller?: string): Controller {
+    invoke<T>(method: string, data: T, controller?: string): Controller {
         this.ws.send(new TextMessage(method, data, controller || this.alias,null,null,true).toString());
         return this;
     }    
@@ -166,7 +167,7 @@ export class Controller {
      * @returns {Controller}
      * @memberof Controller
      */
-    publish(topic: string, data: any, controller?: string): Controller {
+    publish<T>(topic: string, data: T, controller?: string): Controller {
         this.invoke(topic,data,controller || this.alias);
          return this;
     }
@@ -179,8 +180,8 @@ export class Controller {
      * @returns {Controller}
      * @memberof Controller
      */
-    setProperty(propName: string, propValue: any, controller?: string): Controller {
-        this.invoke(propName, propValue, controller || this.alias);
+    setProperty<T>(propName: string, propValue: T, controller?: string): Controller {
+        this.invoke<T>(propName, propValue, controller || this.alias);
         return this;
     }  
      /**
@@ -203,9 +204,9 @@ export class Controller {
             this.isConnected = false;
         }
         else {
-            let listener = this.findListener(topic);
+            const listener = this.findListener(topic);
             if (listener)
-                listener.fn(JSON.parse(data), buffer);
+                listener.action(JSON.parse(data), buffer);
         }
     }
 }

@@ -4,12 +4,12 @@
  * @export
  * @class Listener
  */
-export class Listener {
-    fn: Function;
+export class Listener{
+    action: (data:any,buffer?:ArrayBuffer) => void;
     topic: string;
     count: number;
-    constructor(topic: string, fn: Function) {
-        this.fn = fn;
+    constructor(topic: string, action: (data:any,buffer?:ArrayBuffer) => void) {
+        this.action = action;
         this.topic = topic;
         this.count = 0;
     }

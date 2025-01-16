@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DataChannel = void 0;
-const TextMessage_1 = require("../Messages/TextMessage");
-const DataChannelListner_1 = require("./DataChannelListner");
 const BinaryMessage_1 = require("../Messages/BinaryMessage");
+const TextMessage_1 = require("../Messages/TextMessage");
 const Utils_1 = require("../Utils/Utils");
+const DataChannelListner_1 = require("./DataChannelListner");
 class DataChannel {
     constructor(label, listeners) {
         this.Listners = listeners || new Map();
@@ -48,7 +48,7 @@ class DataChannel {
     }
     dispatchMessage(msg) {
         let listener = this.findListener(msg.T);
-        listener && listener.fn.apply(this, [JSON.parse(msg.D), msg.B]);
+        listener && listener.action.apply(this, [JSON.parse(msg.D), msg.B]);
     }
     onMessage(event) {
         const isBinary = typeof (event.data) !== "string";

@@ -10,15 +10,15 @@ export declare class Controller {
     onClose(event: any): void;
     connect(): this;
     close(): this;
-    subscribe(topic: string, callback: any): Listener;
+    subscribe<T>(topic: string, fn: (data: T, buffer?: ArrayBuffer) => void): Listener;
     unsubscribe(topic: string): void;
-    on(topic: string, fn: any): Listener;
+    on<T>(topic: string, fn: (data: T, buffer?: ArrayBuffer) => void): Listener;
     of(topic: string): void;
     private findListener;
     invokeBinary(buffer: ArrayBuffer): Controller;
     publishBinary(buffer: ArrayBuffer): Controller;
-    invoke(method: string, data: any, controller?: string): Controller;
-    publish(topic: string, data: any, controller?: string): Controller;
-    setProperty(propName: string, propValue: any, controller?: string): Controller;
+    invoke<T>(method: string, data: T, controller?: string): Controller;
+    publish<T>(topic: string, data: T, controller?: string): Controller;
+    setProperty<T>(propName: string, propValue: T, controller?: string): Controller;
     dispatch(topic: string, data: any, buffer?: ArrayBuffer | Uint8Array): void;
 }

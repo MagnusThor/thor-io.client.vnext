@@ -13,7 +13,7 @@
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "removeComments": true,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "rootDirs": [
       "src"
     ],

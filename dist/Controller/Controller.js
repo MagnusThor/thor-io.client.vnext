@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Controller = void 0;
-const TextMessage_1 = require("../Messages/TextMessage");
 const Listener_1 = require("../Events/Listener");
+const TextMessage_1 = require("../Messages/TextMessage");
 class Controller {
     constructor(alias, ws) {
         this.alias = alias;
@@ -26,12 +26,12 @@ class Controller {
         return this;
     }
     ;
-    subscribe(topic, callback) {
+    subscribe(topic, fn) {
         this.ws.send(new TextMessage_1.TextMessage("___subscribe", {
             topic: topic,
             controller: this.alias
         }, this.alias).toString());
-        return this.on(topic, callback);
+        return this.on(topic, fn);
     }
     unsubscribe(topic) {
         this.ws.send(new TextMessage_1.TextMessage("___unsubscribe", {
@@ -91,9 +91,9 @@ class Controller {
             this.isConnected = false;
         }
         else {
-            let listener = this.findListener(topic);
+            const listener = this.findListener(topic);
             if (listener)
-                listener.fn(JSON.parse(data), buffer);
+                listener.action(JSON.parse(data), buffer);
         }
     }
 }

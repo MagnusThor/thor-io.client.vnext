@@ -1,5 +1,5 @@
-import { TextMessage } from "../Messages/TextMessage";
-import { DataChannelListner } from "./DataChannelListner";
+import { TextMessage } from '../Messages/TextMessage';
+import { DataChannelListner } from './DataChannelListner';
 import { PeerChannel } from './PeerChannel';
 export declare class DataChannel {
     Listners: Map<string, DataChannelListner>;
