@@ -1,5 +1,6 @@
 import { Utils } from '../Utils/Utils';
-import { TextMessage } from "./TextMessage";
+import { TextMessage } from './TextMessage';
+
 /**
  *  thor-io BinaryMessage
  *
@@ -24,9 +25,13 @@ export class BinaryMessage {
         let bytesMessage = bytes.slice(header.byteLength, start);
         let stop = buffer.byteLength;
         let messageBuffer = bytes.slice(start, stop);
-        let textMessage = String.fromCharCode.apply(null, new Uint16Array(bytesMessage));
+        
+        // Use TextDecoder to decode the bytes into a string
+        let textDecoder = new TextDecoder();
+        let textMessage = textDecoder.decode(bytesMessage);
+        
         let message = JSON.parse(textMessage) as TextMessage;
-        return new TextMessage(message.T, message.D, message.C, messageBuffer,message.I,message.F);
+        return new TextMessage(message.T, message.D, message.C, messageBuffer, message.I, message.F);
     }
     /**
      *Creates an instance of BinaryMessage.
@@ -36,7 +41,7 @@ export class BinaryMessage {
      */
     constructor(message: string, public arrayBuffer: ArrayBuffer) {
         this.header = new Uint8Array(Utils.longToArray(message.length));
-        this.buffer = Utils.joinBuffers(Utils.joinBuffers(this.header.buffer, Utils.stingToBuffer(message).buffer), arrayBuffer);
+        this.buffer = Utils.joinBuffers(Utils.joinBuffers(this.header.buffer, Utils.stringToBuffer(message).buffer), arrayBuffer);
     }
  
 }

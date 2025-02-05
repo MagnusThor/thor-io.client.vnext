@@ -1,6 +1,6 @@
 {
   "name": "thor-io.client-vnext",
-  "version": "2.2.0-beta.5",
+  "version": "3.0.3",
   "engines": {
     "node": ">=16"
   },
@@ -43,9 +43,13 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "@types/dom-speech-recognition": "^0.0.4",
+    "@types/webrtc": "^0.0.44",
     "webrtc-adapter": "^8.0.0"
   },
   "devDependencies": {
-    "typescript": "^4.9.3"
+    "@types/node": "^16.11.11",
+    "typedoc": "^0.27.6",
+    "typescript": "^5.7.3"
   }
 }

@@ -1,6 +1,6 @@
-export declare class PropertyMessage {
+export declare class PropertyMessage<T> {
     name: string;
-    value: any;
+    value: T | undefined;
     messageId: string;
-    constructor();
+    constructor(name: string);
 }

@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DataChannel = void 0;
-const TextMessage_1 = require("../Messages/TextMessage");
-const DataChannelListner_1 = require("./DataChannelListner");
 const BinaryMessage_1 = require("../Messages/BinaryMessage");
+const TextMessage_1 = require("../Messages/TextMessage");
 const Utils_1 = require("../Utils/Utils");
+const DataChannelListener_1 = require("./DataChannelListener");
 class DataChannel {
     constructor(label, listeners) {
         this.Listners = listeners || new Map();
@@ -19,7 +19,7 @@ class DataChannel {
         return listener;
     }
     on(topic, fn) {
-        var listener = new DataChannelListner_1.DataChannelListner(this.label, topic, fn);
+        var listener = new DataChannelListener_1.DataChannelListener(this.label, topic, fn);
         this.Listners.set(topic, listener);
         return listener;
     }
@@ -48,7 +48,7 @@ class DataChannel {
     }
     dispatchMessage(msg) {
         let listener = this.findListener(msg.T);
-        listener && listener.fn.apply(this, [JSON.parse(msg.D), msg.B]);
+        listener && listener.action.apply(this, [JSON.parse(msg.D), msg.B]);
     }
     onMessage(event) {
         const isBinary = typeof (event.data) !== "string";
@@ -68,13 +68,13 @@ class DataChannel {
     invoke(topic, data, isFinal, uuid) {
         this.PeerChannels.forEach((channel) => {
             if (channel.dataChannel.readyState === "open" && channel.label === this.label) {
-                channel.dataChannel.send(new TextMessage_1.TextMessage(topic, data, channel.label, null, uuid, isFinal).toString());
+                channel.dataChannel.send(new TextMessage_1.TextMessage(topic, data, channel.label, undefined, uuid, isFinal).toString());
             }
         });
         return this;
     }
     invokeBinary(topic, data, arrayBuffer, isFinal, uuid) {
-        let m = new TextMessage_1.TextMessage(topic, data, this.label, null, uuid, isFinal);
+        let m = new TextMessage_1.TextMessage(topic, data, this.label, undefined, uuid, isFinal);
         const message = new BinaryMessage_1.BinaryMessage(m.toString(), arrayBuffer);
         this.PeerChannels.forEach((channel) => {
             if (channel.dataChannel.readyState === "open" && channel.label === this.label) {

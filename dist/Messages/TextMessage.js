@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextMessage = void 0;
-const BinaryMessage_1 = require("./BinaryMessage");
 const Utils_1 = require("../Utils/Utils");
+const BinaryMessage_1 = require("./BinaryMessage");
 class TextMessage {
     toJSON() {
         return {
@@ -10,7 +10,7 @@ class TextMessage {
             D: JSON.stringify(this.D),
             C: this.C,
             I: this.I,
-            F: this.F
+            F: this.F,
         };
     }
     constructor(topic, object, controller, buffer, uuid, isFinal) {

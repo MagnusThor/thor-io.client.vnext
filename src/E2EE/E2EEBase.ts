@@ -1,11 +1,11 @@
 export interface IE2EE {
-    decode(frame: any, controller: any):any;
-    encode(frame: any, controller: any):any;
-    setKey(key:string):void;
+    decode(frame: any, controller: any): any;
+    encode(frame: any, controller: any): any;
+    setKey(key: string): void;
 }
+
 /**
- * Primitive encrypion
- * based on https://github.com/webrtc/samples/blob/gh-pages/src/content/peerconnection/endtoend-encryption/js/main.js
+ * Primitive encryption based on https://github.com/webrtc/samples/blob/gh-pages/src/content/peerconnection/endtoend-encryption/js/main.js
  * @export
  * @class E2EEBase
  * @implements {IE2EE}
@@ -17,18 +17,48 @@ export class E2EEBase implements IE2EE {
         delta: 3,
         undefined: 1,
     };
-    setKey(key:string){
-            this.currentCryptoKey = key;
-    }
-    useCryptoOffset = true;
-    currentKeyIdentifier = 0;
-    rcount: number = 0;
-    scount: number = 0;
 
-    constructor(public currentCryptoKey: string) {
+    /** @type {boolean} */
+    public useCryptoOffset: boolean = true;
 
+    /** @type {number} */
+    public currentKeyIdentifier: number = 0;
+
+    /** @type {number} */
+    public rcount: number = 0;
+
+    /** @type {number} */
+    public scount: number = 0;
+
+    /** @type {string} */
+    private currentCryptoKey: string;
+
+    /**
+     * Creates an instance of E2EEBase.
+     * @param {string} currentCryptoKey The initial crypto key.
+     * @memberof E2EEBase
+     */
+    constructor(currentCryptoKey: string) {
+        this.currentCryptoKey = currentCryptoKey;
     }
-    dump(encodedFrame: any, direction: any, max = 16) {
+
+    /**
+     * Sets the current crypto key.
+     * @param {string} key The new crypto key.
+     * @memberof E2EEBase
+     */
+    setKey(key: string): void {
+        this.currentCryptoKey = key;
+    }
+
+    /**
+     * Dumps the encoded frame data for debugging.
+     * @param {any} encodedFrame The encoded frame.
+     * @param {any} direction The direction of the frame (send/recv).
+     * @param {number} [max=16] The maximum number of bytes to dump.
+     * @memberof E2EEBase
+     */
+    dump(encodedFrame: any, direction: any, max: number = 16): void {
         const data = new Uint8Array(encodedFrame.data);
         let bytes = '';
         for (let j = 0; j < data.length && j < max; j++) {
@@ -42,13 +72,18 @@ export class E2EEBase implements IE2EE {
         );
     }
 
-    encode(encodedFrame: any, controller: any) {
+    /**
+     * Encodes the frame with the current crypto key.
+     * @param {any} encodedFrame The encoded frame.
+     * @param {any} controller The controller to enqueue the frame.
+     * @memberof E2EEBase
+     */
+    encode(encodedFrame: any, controller: any): void {
         if (this.scount++ < 30) { // dump the first 30 packets.
             this.dump(encodedFrame, 'send');
         }
         if (this.currentCryptoKey) {
             const view = new DataView(encodedFrame.data);
-            // Any length that is needed can be used for the new buffer.
             const newData = new ArrayBuffer(encodedFrame.data.byteLength + 5);
             const newView = new DataView(newData);
 
@@ -56,22 +91,27 @@ export class E2EEBase implements IE2EE {
             for (let i = 0; i < cryptoOffset && i < encodedFrame.data.byteLength; ++i) {
                 newView.setInt8(i, view.getInt8(i));
             }
-            // This is a bitwise xor of the key with the payload. This is not strong encryption, just a demo.
 
             for (let i = cryptoOffset; i < encodedFrame.data.byteLength; ++i) {
                 const keyByte = this.currentCryptoKey.charCodeAt(i % this.currentCryptoKey.length);
                 newView.setInt8(i, view.getInt8(i) ^ keyByte);
             }
-            // Append keyIdentifier.
+
             newView.setUint8(encodedFrame.data.byteLength, this.currentKeyIdentifier % 0xff);
-            // Append checksum
             newView.setUint32(encodedFrame.data.byteLength + 1, 0xDEADBEEF);
 
             encodedFrame.data = newData;
         }
         controller.enqueue(encodedFrame);
     }
-    decode(encodedFrame: any, controller: any) {
+
+    /**
+     * Decodes the frame with the current crypto key.
+     * @param {any} encodedFrame The encoded frame.
+     * @param {any} controller The controller to enqueue the frame.
+     * @memberof E2EEBase
+     */
+    decode(encodedFrame: any, controller: any): void {
         if (this.rcount++ < 30) { // dump the first 30 packets
             this.dump(encodedFrame, 'recv');
         }
@@ -107,5 +147,3 @@ export class E2EEBase implements IE2EE {
         controller.enqueue(encodedFrame);
     }
 }
-
-
