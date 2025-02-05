@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WebRTCFactory = void 0;
-const ThorIOConnection_1 = require("./Models/ThorIOConnection");
 const DataChannel_1 = require("../DataChannels/DataChannel");
 const PeerChannel_1 = require("../DataChannels/PeerChannel");
+const ThorIOConnection_1 = require("../Models/ThorIOConnection");
 class WebRTCFactory {
     onConnectAll(peerConnections) {
         this.connect(peerConnections);
@@ -61,7 +61,7 @@ class WebRTCFactory {
     }
     addTrackToPeers(track) {
         this.peers.forEach((p) => {
-            let pc = p.peerConnection;
+            const pc = p.peerConnection;
             pc.onnegotiationneeded = (e) => {
                 pc.createOffer()
                     .then(offer => pc.setLocalDescription(offer))
@@ -79,10 +79,11 @@ class WebRTCFactory {
     }
     removeTrackFromPeers(track) {
         this.peers.forEach((p) => {
-            let sender = p.getSenders().find((sender) => {
+            const sender = p.getSenders().find((sender) => {
                 return sender.track.id === track.id;
             });
-            p.peerConnection.removeTrack(sender);
+            if (sender)
+                p.peerConnection.removeTrack(sender);
         });
     }
     getRtpSenders(peerId) {
@@ -121,7 +122,7 @@ class WebRTCFactory {
         return newLines.join("\n");
     }
     createDataChannel(name) {
-        let channel = new DataChannel_1.DataChannel(name);
+        const channel = new DataChannel_1.DataChannel(name);
         this.dataChannels.set(name, channel);
         return channel;
     }
@@ -129,10 +130,11 @@ class WebRTCFactory {
         this.dataChannels.delete(name);
     }
     addError(err) {
-        this.onError(err);
+        if (this.onError)
+            this.onError(err);
     }
     onCandidate(event) {
-        let msg = JSON.parse(event.message);
+        const msg = JSON.parse(event.message);
         let candidate = msg.iceCandidate;
         let pc = this.getOrCreateRTCPeerConnection(event.sender);
         pc.addIceCandidate(new RTCIceCandidate(candidate)).then(() => {
@@ -350,7 +352,8 @@ class WebRTCFactory {
     }
     disconnectPeer(id) {
         let peer = this.findPeerConnection(id);
-        peer.peerConnection.close();
+        if (peer)
+            peer.peerConnection.close();
     }
     connect(peerConnections) {
         peerConnections.forEach((peerConnection) => {

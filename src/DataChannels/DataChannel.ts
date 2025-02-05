@@ -1,7 +1,7 @@
 import { BinaryMessage } from '../Messages/BinaryMessage';
 import { TextMessage } from '../Messages/TextMessage';
 import { Utils } from '../Utils/Utils';
-import { DataChannelListner } from './DataChannelListner';
+import { DataChannelListener } from './DataChannelListener';
 import { PeerChannel } from './PeerChannel';
 
 /**
@@ -11,21 +11,21 @@ import { PeerChannel } from './PeerChannel';
  * @class DataChannel
  */
 export class DataChannel {
-    Listners: Map<string, DataChannelListner>;
+    Listners: Map<string, DataChannelListener>;
     public label: string;
     public PeerChannels: Map<{ id: string, name: string }, PeerChannel>;
     messageFragments: Map<string, {
         msg: TextMessage, receiveBuffer: ArrayBuffer
     }>;
-    constructor(label: string, listeners?: Map<string, DataChannelListner>) {
-        this.Listners = listeners || new Map<string, DataChannelListner>();
+    constructor(label: string, listeners?: Map<string, DataChannelListener>) {
+        this.Listners = listeners || new Map<string, DataChannelListener>();
         this.PeerChannels = new Map<{ id: string, name: string }, PeerChannel>();
         this.label = label;
         this.messageFragments = new Map<string, { msg: TextMessage, receiveBuffer: ArrayBuffer }>();
     }
 
-    private findListener(topic: string): DataChannelListner {
-        let listener = Array.from(this.Listners.values()).find((pre: DataChannelListner) => {
+    private findListener(topic: string): DataChannelListener | undefined {
+        let listener = Array.from(this.Listners.values()).find((pre: DataChannelListener) => {
             return pre.channelName === this.label && pre.topic === topic;
         });
         return listener;
@@ -38,8 +38,8 @@ export class DataChannel {
      * @returns {DataChannelListner}
      * @memberof DataChannel
      */
-    on<T>(topic: string, fn: (message: T, arrayBuffer: ArrayBuffer) => void): DataChannelListner {
-        var listener = new DataChannelListner(this.label, topic, fn);
+    on<T>(topic: string, fn: (message: T, arrayBuffer?: ArrayBuffer) => void): DataChannelListener {
+        var listener = new DataChannelListener(this.label, topic, fn);
         this.Listners.set(topic, listener);
         return listener;
     }
@@ -77,17 +77,17 @@ export class DataChannel {
      */
     private addMessageFragment(message: TextMessage) {
         if (!this.messageFragments.has(message.I)) {
-            const data = { msg: message, receiveBuffer:new ArrayBuffer(0) };
-            data.receiveBuffer = Utils.joinBuffers(data.receiveBuffer, message.B);
+            const data = { msg: message, receiveBuffer: new ArrayBuffer(0) };
+            data.receiveBuffer = Utils.joinBuffers(data.receiveBuffer, message.B!);
             this.messageFragments.set(message.I, data);
-        } else {         
+        } else {
             let current = this.messageFragments.get(message.I);
-            current.receiveBuffer = Utils.joinBuffers(current.receiveBuffer,message.B);
+            current!.receiveBuffer = Utils.joinBuffers(current!.receiveBuffer, message.B!);
         }
         if (message.F) {
-            let result = this.messageFragments.get(message.I);        
-            result.msg.B = result.receiveBuffer;
-            this.dispatchMessage(result.msg);
+            let result = this.messageFragments.get(message.I);
+            result!.msg.B = result!.receiveBuffer;
+            this.dispatchMessage(result!.msg);
             this.messageFragments.delete(message.I);
         }
         message.B = new ArrayBuffer(0) //
@@ -134,14 +134,14 @@ export class DataChannel {
     invoke(topic: string, data: any, isFinal?: boolean, uuid?: string): DataChannel {
         this.PeerChannels.forEach((channel: PeerChannel) => {
             if (channel.dataChannel.readyState === "open" && channel.label === this.label) {
-                channel.dataChannel.send(new TextMessage(topic, data, channel.label, null, uuid, isFinal).toString());
+                channel.dataChannel.send(new TextMessage(topic, data, channel.label, undefined, uuid, isFinal).toString());
             }
         });
         return this;
     }
 
     invokeBinary(topic: string, data: any, arrayBuffer: ArrayBuffer, isFinal: boolean, uuid?: string): DataChannel {
-        let m = new TextMessage(topic, data, this.label, null, uuid, isFinal);
+        let m = new TextMessage(topic, data, this.label, undefined, uuid, isFinal);
         const message = new BinaryMessage(m.toString(),
             arrayBuffer
         );
@@ -161,7 +161,7 @@ export class DataChannel {
     addPeerChannel(pc: PeerChannel) {
         this.PeerChannels.set({
             id: pc.peerId, name: pc.label
-        },pc);
+        }, pc);
     }
     /**
      *  Remove a PeerChannel

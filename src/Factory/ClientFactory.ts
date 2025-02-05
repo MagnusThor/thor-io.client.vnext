@@ -10,16 +10,23 @@ import { BinaryMessage } from '../Messages/BinaryMessage';
 export class ClientFactory {
   private ws: WebSocket;
 
+  /**
+   * Converts an object to a query string.
+   *
+   * @private
+   * @param {Object} obj The object to convert.
+   * @returns {string} The resulting query string.
+   */
   private toQuery(obj: any): string {
     return `?${Object.keys(obj)
-      .map((key) => encodeURIComponent(key) + "=" + encodeURIComponent(obj[key]))
+      .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(obj[key])}`)
       .join("&")}`;
   }
 
   private controllers: Map<string, Controller>;
 
   /** Flag indicating if the connection is established */
-  public IsConnected: boolean;
+  public IsConnected: boolean = false;
 
   /**
    * Creates an instance of ClientFactory.

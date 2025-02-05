@@ -6,10 +6,11 @@ const BinaryMessage_1 = require("../Messages/BinaryMessage");
 class ClientFactory {
     toQuery(obj) {
         return `?${Object.keys(obj)
-            .map((key) => encodeURIComponent(key) + "=" + encodeURIComponent(obj[key]))
+            .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(obj[key])}`)
             .join("&")}`;
     }
     constructor(url, controllers, params) {
+        this.IsConnected = false;
         this.controllers = new Map();
         this.ws = new WebSocket(url + this.toQuery(params || {}));
         this.ws.binaryType = "arraybuffer";

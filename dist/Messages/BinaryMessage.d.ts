@@ -1,4 +1,4 @@
-import { TextMessage } from "./TextMessage";
+import { TextMessage } from './TextMessage';
 export declare class BinaryMessage {
     arrayBuffer: ArrayBuffer;
     buffer: ArrayBuffer;

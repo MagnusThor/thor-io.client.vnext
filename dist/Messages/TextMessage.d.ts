@@ -1,10 +1,10 @@
 export declare class TextMessage {
-    B: ArrayBuffer | Uint8Array;
+    B?: ArrayBuffer | Uint8Array;
     T: string;
     D: any;
     C: string;
     I: string;
-    F: boolean;
+    F?: boolean;
     toJSON(): any;
     constructor(topic: string, object: any, controller: string, buffer?: ArrayBuffer | Uint8Array, uuid?: string, isFinal?: boolean);
     toString(): string;

@@ -2,50 +2,52 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Recorder = void 0;
 class Recorder {
-    constructor(stream, mimeType, ignoreMutedMedia) {
+    constructor(stream, mimeType) {
         this.stream = stream;
         this.mimeType = mimeType;
-        this.ignoreMutedMedia = ignoreMutedMedia;
-        this.recorder = new exports.MediaRecorder(stream, { mimeType: mimeType, ignoreMutedMedia: ignoreMutedMedia });
-        this.recorder.onstop = (event) => {
-            this.handleStop(event);
-        };
-        this.recorder.ondataavailable = (event) => {
-            this.handleDataAvailable(event);
-        };
+        this.blobs = [];
+        this.IsRecording = false;
+        try {
+            this.recorder = new MediaRecorder(stream, { mimeType: mimeType });
+            this.recorder.onstop = this.handleStop.bind(this);
+            this.recorder.ondataavailable = this.handleDataAvailable.bind(this);
+        }
+        catch (error) {
+            console.error("Error creating MediaRecorder:", error);
+        }
     }
     handleStop(event) {
         this.IsRecording = false;
-        let blob = new Blob(this.blobs, { type: this.mimeType });
-        this.OnRecordComplated.apply(event, [blob, URL.createObjectURL(blob)]);
+        const blob = new Blob(this.blobs, { type: this.mimeType });
+        if (this.OnRecordComplated) {
+            this.OnRecordComplated(blob, URL.createObjectURL(blob));
+        }
     }
-    OnRecordComplated(blob, blobUrl) { }
     handleDataAvailable(event) {
         if (event.data.size > 0) {
             this.blobs.push(event.data);
         }
     }
     IsTypeSupported(type) {
-        throw "not yet implemented";
+        return MediaRecorder.isTypeSupported(type);
     }
     getStats() {
         return {
             videoBitsPerSecond: this.recorder.videoBitsPerSecond,
-            audioBitsPerSecond: this.recorder.audioBitsPerSecond
+            audioBitsPerSecond: this.recorder.audioBitsPerSecond,
         };
     }
     stop() {
         this.recorder.stop();
     }
-    start(ms) {
-        this.blobs = new Array();
+    start(ms = 100) {
+        this.blobs = [];
         if (this.IsRecording) {
             this.stop();
             return;
         }
-        this.blobs.length = 0;
         this.IsRecording = true;
-        this.recorder.start(ms || 100);
+        this.recorder.start(ms);
     }
 }
 exports.Recorder = Recorder;

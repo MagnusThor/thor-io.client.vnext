@@ -8,12 +8,11 @@ export declare class Controller {
     onError(event: any): void;
     onOpen(event: any): void;
     onClose(event: any): void;
-    connect(): this;
-    close(): this;
+    connect(): Controller;
+    close(): Controller;
     subscribe<T>(topic: string, fn: (data: T, buffer?: ArrayBuffer) => void): Listener;
     unsubscribe(topic: string): void;
     on<T>(topic: string, fn: (data: T, buffer?: ArrayBuffer) => void): Listener;
-    of(topic: string): void;
     private findListener;
     invokeBinary(buffer: ArrayBuffer): Controller;
     publishBinary(buffer: ArrayBuffer): Controller;

@@ -1,17 +1,15 @@
-export declare var MediaRecorder: any;
 export declare class Recorder {
     private stream;
     private mimeType;
-    private ignoreMutedMedia;
     private recorder;
     private blobs;
     IsRecording: boolean;
-    constructor(stream: MediaStream, mimeType: string, ignoreMutedMedia: boolean);
+    constructor(stream: MediaStream, mimeType: string);
     private handleStop;
-    OnRecordComplated(blob: any, blobUrl: string): void;
+    OnRecordComplated?(blob: Blob, blobUrl: string): void;
     private handleDataAvailable;
-    IsTypeSupported(type: string): void;
+    IsTypeSupported(type: string): boolean;
     getStats(): any;
     stop(): void;
-    start(ms: number): void;
+    start(ms?: number): void;
 }

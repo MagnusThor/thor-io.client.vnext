@@ -1,8 +1,8 @@
 import { TextMessage } from '../Messages/TextMessage';
-import { DataChannelListner } from './DataChannelListner';
+import { DataChannelListener } from './DataChannelListener';
 import { PeerChannel } from './PeerChannel';
 export declare class DataChannel {
-    Listners: Map<string, DataChannelListner>;
+    Listners: Map<string, DataChannelListener>;
     label: string;
     PeerChannels: Map<{
         id: string;
@@ -12,9 +12,9 @@ export declare class DataChannel {
         msg: TextMessage;
         receiveBuffer: ArrayBuffer;
     }>;
-    constructor(label: string, listeners?: Map<string, DataChannelListner>);
+    constructor(label: string, listeners?: Map<string, DataChannelListener>);
     private findListener;
-    on<T>(topic: string, fn: (message: T, arrayBuffer: ArrayBuffer) => void): DataChannelListner;
+    on<T>(topic: string, fn: (message: T, arrayBuffer?: ArrayBuffer) => void): DataChannelListener;
     off(topic: string): boolean;
     onOpen(event: Event, peerId: string, name: string): void;
     onClose(event: Event, peerId: string, name: string): void;

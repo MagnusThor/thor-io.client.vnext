@@ -1,6 +1,6 @@
 export declare class PeerChannel {
-    dataChannel: RTCDataChannel;
     peerId: string;
+    dataChannel: RTCDataChannel;
     label: string;
     constructor(peerId: string, dataChannel: RTCDataChannel, label: string);
 }
